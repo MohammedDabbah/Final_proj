@@ -59,3 +59,18 @@ router.get('/logout', (req, res) => {
 });
 
 module.exports = router;
+
+// Profile Route
+router.get('/profile', (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: 'You are not logged in' });
+  }
+
+  // Return the user's profile information
+  res.status(200).json({
+    FName: req.user.FName,
+    LName: req.user.LName,
+    Email: req.user.Email,
+    // Add any other details you want to include in the profile
+  });
+});

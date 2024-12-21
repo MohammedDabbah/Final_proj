@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import serverApi from '../../api/serverApi';
+import { useNavigation } from '@react-navigation/native'; // Import navigation
 
 const LoginScreen = () => {
+  const navigation = useNavigation();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,6 +24,13 @@ const LoginScreen = () => {
       if (response.status === 200) {
         alert('Login successful!');
         // Proceed to the next screen or save user info
+           //=======================ProfileStudentScreen===========================
+           const userData = response.data; // Assuming response contains user data
+           console.log('User Data:', userData); // Debugging line to check userData
+     
+           // Pass userData to the ProfileStudentScreen
+           navigation.navigate('ProfileStudentScreen', { userData: response.data.user });
+           //=======================================================================
       }
     } catch (err) {
       console.error('Error:', err.response?.data || err.message);
