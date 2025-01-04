@@ -4,41 +4,65 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import serverApi from '../../api/serverApi';
 
 const SignupScreen = () => {
-  const [FName, setFName] = useState('');
-  const [LName, setLName] = useState('');
-  const [Email, setEmail] = useState('');
-  const [Password, setPassword] = useState('');
-  const [ConfirmPS, setConfirmPS] = useState('');
+  const [fName, setFName] = useState('');
+  const [lName, setLName] = useState('');
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const handleSendVerificationCode = async () => {
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+
+    try {
+      const response = await serverApi.get('/auth/Verification', {
+        params: { mail: email },
+        withCredentials: true,
+      });
+      alert('Verification code sent!');
+    } catch (err) {
+      console.error('Error:', err.response?.data || err.message);
+      alert('Error sending verification code.');
+    }
+  };
+
   const handleSubmit = async () => {
-    if (Password !== ConfirmPS) {
+    if (password !== confirmPassword) {
       alert("Passwords don't match");
       return;
     }
 
-    if (!FName || !LName || !Email || !Password) {
+    if (!fName || !lName || !email || !password) {
       alert('Please fill all the fields');
       return;
     }
 
     try {
-      setLoading(true); // Show loading spinner during the API call
-      const response = await serverApi.post('/auth/register', {
-        FName,
-        LName,
-        Email,
-        Password,
-      });
+      setLoading(true);
+      const response = await serverApi.post(
+        '/auth/register',
+        {
+          FName: fName,
+          LName: lName,
+          Email: email,
+          code,
+          Password: password,
+        },
+        { withCredentials: true }
+      );
 
       if (response.status === 200) {
         alert('User registered successfully!');
-        // Clear input fields after successful registration
         setFName('');
         setLName('');
         setEmail('');
+        setCode('');
         setPassword('');
-        setConfirmPS('');
+        setConfirmPassword('');
       }
     } catch (err) {
       console.error('Error:', err.response?.data || err.message);
@@ -48,7 +72,7 @@ const SignupScreen = () => {
         alert('Error registering user. Please try again.');
       }
     } finally {
-      setLoading(false); // Hide loading spinner after the API call
+      setLoading(false);
     }
   };
 
@@ -57,36 +81,53 @@ const SignupScreen = () => {
       <Text style={styles.title}>Get Started</Text>
       <TextInput
         placeholder="First Name"
+        autoCapitalize="none"
+        autoCorrect={false}
         style={styles.input}
-        value={FName}
-        onChangeText={(value) => setFName(value)}
+        value={fName}
+        onChangeText={setFName}
       />
       <TextInput
         placeholder="Last Name"
+        autoCapitalize="none"
+        autoCorrect={false}
         style={styles.input}
-        value={LName}
-        onChangeText={(value) => setLName(value)}
+        value={lName}
+        onChangeText={setLName}
       />
+      <View style={styles.inputWithIcon}>
+        <TextInput
+          placeholder="Email"
+          autoCapitalize="none"
+          autoCorrect={false}
+          style={styles.inputFlex}
+          value={email}
+          keyboardType="email-address"
+          onChangeText={setEmail}
+        />
+        <TouchableOpacity onPress={handleSendVerificationCode}>
+          <Icon name="check" size={20} color="green" style={styles.iconInsideInput} />
+        </TouchableOpacity>
+      </View>
       <TextInput
-        placeholder="Email"
+        placeholder="Verification Code"
         style={styles.input}
-        keyboardType="email-address"
-        value={Email}
-        onChangeText={(value) => setEmail(value)}
+        value={code}
+        onChangeText={setCode}
       />
       <TextInput
         placeholder="Password"
         style={styles.input}
         secureTextEntry
-        value={Password}
-        onChangeText={(value) => setPassword(value)}
+        value={password}
+        onChangeText={setPassword}
       />
       <TextInput
-        placeholder="Confirm password"
+        placeholder="Confirm Password"
         style={styles.input}
         secureTextEntry
-        value={ConfirmPS}
-        onChangeText={(value) => setConfirmPS(value)}
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
       />
       <TouchableOpacity style={styles.agreementContainer}>
         <Text style={styles.agreementText}>
@@ -128,6 +169,23 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 15,
     backgroundColor: '#fff',
+  },
+  inputWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 15,
+    backgroundColor: '#fff',
+  },
+  inputFlex: {
+    flex: 1,
+    marginRight: 10,
+  },
+  iconInsideInput: {
+    marginLeft: 10,
   },
   agreementContainer: {
     marginVertical: 15,

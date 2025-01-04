@@ -1,48 +1,43 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import serverApi from '../../api/serverApi';
-import { useNavigation } from '@react-navigation/native'; // Import navigation
+import React, { useState, useContext } from "react";
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
+import serverApi from "../../api/serverApi";
+import { AuthContext } from "../../Auth/AuthContext";
+import { useNavigation } from "@react-navigation/native";
 
 const LoginScreen = () => {
-  const navigation = useNavigation();
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { setUser } = useContext(AuthContext); // Access setUser from AuthContext
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigation = useNavigation(); // Use useNavigation hook
+
 
   const handleLogin = async () => {
     if (!email || !password) {
-      alert('Please enter both email and password');
+      alert("Please enter both email and password");
       return;
     }
 
     try {
-      setLoading(true); // Show loading spinner during the API call
-      const response = await serverApi.post('/auth/login', { email, password });
+      setLoading(true);
+      const response = await serverApi.post("/auth/login", { email, password }, { withCredentials: true });
 
       if (response.status === 200) {
-        alert('Login successful!');
-        // Proceed to the next screen or save user info
-           //=======================ProfileStudentScreen===========================
-           const userData = response.data; // Assuming response contains user data
-           console.log('User Data:', userData); // Debugging line to check userData
-     
-           // Pass userData to the ProfileStudentScreen
-           navigation.navigate('ProfileStudentScreen', { userData: response.data.user });
-           //=======================================================================
+        alert("Login successful!");
+        setUser(response.data.user); // Set the authenticated user in AuthContext
       }
     } catch (err) {
-      console.error('Error:', err.response?.data || err.message);
-      if (err.response?.data?.message === 'Incorrect email.') {
-        alert('Email not found. Please try again.');
-      } else if (err.response?.data?.message === 'Incorrect password.') {
-        alert('Incorrect password. Please try again.');
+      console.error("Error:", err.response?.data || err.message);
+      if (err.response?.data?.message === "Incorrect email.") {
+        alert("Email not found. Please try again.");
+      } else if (err.response?.data?.message === "Incorrect password.") {
+        alert("Incorrect password. Please try again.");
       } else {
-        alert('Error logging in. Please try again.');
+        alert("Error logging in. Please try again.");
       }
     } finally {
-      setLoading(false); // Hide loading spinner
+      setLoading(false);
     }
   };
 
@@ -51,6 +46,8 @@ const LoginScreen = () => {
       <Text style={styles.title}>Welcome Back</Text>
       <TextInput
         placeholder="Email"
+        autoCapitalize="none"
+        autoCorrect={false}
         style={styles.input}
         keyboardType="email-address"
         value={email}
@@ -63,8 +60,8 @@ const LoginScreen = () => {
         value={password}
         onChangeText={(value) => setPassword(value)}
       />
-      <TouchableOpacity style={styles.checkboxContainer}>
-        <Text style={styles.checkboxText}>Remember me</Text>
+      <TouchableOpacity style={styles.checkboxContainer} onPress={()=>{navigation.navigate('reset')}}>
+        {/* <Text style={styles.checkboxText}>Remember me</Text> */}
         <Text style={styles.link}>Forgot password?</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>

@@ -1,7 +1,19 @@
 const express = require('express');
+const cors = require('cors');
+const User = require('../models/User');
+const bcrypt = require('bcrypt');
 const authRoutes = require('./auth');
+const { generateFourDigitCode, sendEmail } = require('../config/nodemailer');
 
 const router = express.Router();
+
+const corsOptions = {
+  origin: 'http://10.100.55.3:8081', // Allow requests from your Expo app's URL
+  credentials: true, // Enable credentials (cookies)
+};
+
+router.use(cors(corsOptions));
+// router.use(cors);
 
 // Root Route
 router.get('/', (req, res) => {
@@ -10,5 +22,128 @@ router.get('/', (req, res) => {
 
 // Mount Auth Routes
 router.use('/auth', authRoutes);
+
+router.get('/profile', (req, res) => {
+  if (req.isAuthenticated()) {
+    console.log(req.user);
+    return res.status(200).send(req.user);
+  } else {
+    console.log('failed');
+    return res.status(403).json({ error: 'Access denied. Please log in.' });
+  }
+});
+
+router.post('/change-details', async (req, res) => {
+  const { fName, lName, password, newPwd } = req.body;
+
+  if (!req.isAuthenticated || !req.isAuthenticated()) {
+    return res.status(401).json({ error: 'You are not authenticated.' });
+  }
+
+  if (!fName && !lName && !password && !newPwd) {
+    return res.status(400).json({ error: 'No fields to update provided.' });
+  }
+
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    // Update full name if provided
+    if (fName) user.FName = fName;
+    if (lName) user.LName = lName;
+
+    // Handle password update
+    if (password && newPwd) {
+      const isMatch = await bcrypt.compare(password, user.Password);
+      if (!isMatch) {
+        return res.status(400).json({ error: 'Incorrect current password.' });
+      }
+
+      // const hashedPassword = await bcrypt.hash(newPwd, 10);
+      user.Password = newPwd;
+    }
+
+    await user.save();
+
+    res.status(200).json({ message: 'Details updated successfully.' });
+  } catch (err) {
+    console.error('Error updating details:', err);
+    res.status(500).json({ error: 'An error occurred while updating details.' });
+  }
+});
+
+
+const verificationCodes = {}; // Store verification codes temporarily
+
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+
+  try {
+    const user = await User.findOne({ Email: email });
+    if (!user) {
+      return res.status(404).json({ error: "User not found with this email" });
+    }
+
+    // Generate a random verification code
+    const verificationCode = generateFourDigitCode();
+    verificationCodes[email] = verificationCode;
+
+    // Send email with the verification code
+
+    console.log(`Generated code for ${email}: ${verificationCode}`);
+
+    await sendEmail(email, 'Email Verification', `Your verification code: ${verificationCode}`);
+   
+    res.status(200).json({ message: "Verification code sent to your email" });
+  } catch (err) {
+    console.error("Error sending verification email:", err);
+    res.status(500).json({ error: "Error sending verification email" });
+  }
+});
+
+router.post('/reset-password', async (req, res) => {
+  const { email, verificationCode, newPassword } = req.body;
+
+  if (!email || !verificationCode || !newPassword) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
+  try {
+    // Check if the verification code matches
+    if (`${verificationCodes[email]}` !== verificationCode) {
+      return res.status(400).json({ error: "Invalid verification code" });
+    }
+
+    const user = await User.findOne({ Email: email });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Hash the new password
+    // const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.Password = newPassword;
+
+    // Save the updated user
+    await user.save();
+
+    // Remove the verification code after successful reset
+    delete verificationCodes[email];
+
+    res.status(200).json({ message: "Password reset successful" });
+  } catch (err) {
+    console.error("Error resetting password:", err);
+    res.status(500).json({ error: "Error resetting password" });
+  }
+});
+
+
+
 
 module.exports = router;
