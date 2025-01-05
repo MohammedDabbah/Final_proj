@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator,Animated  } from "react-native";
 import { Audio } from "expo-av";
 import merriamApi from "../../api/merriamApi";
 
@@ -68,7 +68,7 @@ const DictionaryScreen = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Merriam-Webster Dictionary</Text>
+      <Text style={styles.title}> Dictionary</Text>
       <TextInput
         style={styles.input}
         placeholder="Enter a word..."
@@ -78,7 +78,7 @@ const DictionaryScreen = ({ route }) => {
       <TouchableOpacity style={styles.button} onPress={() => fetchWordData(word)}>
         <Text style={styles.buttonText}>Get Definition</Text>
       </TouchableOpacity>
-      {loading && <ActivityIndicator size="large" color="#6200EE" />}
+      {loading && <ActivityIndicator size="large" color="#B052F7" />}
       {error && <Text style={styles.errorText}>{error}</Text>}
       {definition && (
         <View style={styles.definitionContainer}>
@@ -103,64 +103,104 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#EEF2FA",
+    backgroundColor: "#F8F9FF",  // Softer background color
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
+    fontSize: 26,
+    fontWeight: "600",
     textAlign: "center",
-    marginBottom: 20,
+    marginBottom: 25,
+    color: "#4A4A8F",  // Friendly purple-blue color
+    letterSpacing: 0.5,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 10,
+    borderWidth: 2,
+    borderColor: "#E8E8FF",
+    borderRadius: 15,
+    padding: 15,
     marginBottom: 15,
     backgroundColor: "#fff",
-    fontSize: 16,
+    fontSize: 18,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
   button: {
-    backgroundColor: "#6200EE",
+    backgroundColor: "#B052F7",  // Softer purple
     padding: 15,
-    borderRadius: 8,
+    borderRadius: 15,
     alignItems: "center",
     marginBottom: 20,
+    shadowColor: "#7B78FF",
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   buttonText: {
     color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 18,
+    fontWeight: "600",
+    letterSpacing: 0.5,
   },
   errorText: {
-    color: "red",
+    color: "#FF6B6B",  // Softer red
     textAlign: "center",
     marginBottom: 10,
+    fontSize: 16,
   },
   definitionContainer: {
     marginTop: 20,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 25,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: "#F0F0FF",
   },
   definitionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
+    fontSize: 22,
+    fontWeight: "600",
+    marginBottom: 15,
+    color: "#4A4A8F",
+    letterSpacing: 0.5,
   },
   definitionText: {
-    fontSize: 16,
-    marginBottom: 10,
-    color: "#333",
+    fontSize: 18,
+    marginBottom: 15,
+    color: "#484848",
+    lineHeight: 26,
+    letterSpacing: 0.3,
   },
   audioButton: {
-    marginTop: 10,
-    backgroundColor: "#007BFF",
-    padding: 10,
-    borderRadius: 8,
+    marginTop: 15,
+    backgroundColor: "#B052F7",
+    padding: 12,
+    borderRadius: 15,
     alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
   },
   audioButtonText: {
     color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 18,
+    fontWeight: "500",
   },
 });
 

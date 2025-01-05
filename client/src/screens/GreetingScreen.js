@@ -9,70 +9,84 @@ import {
 import LoginScreen from './LoginScreen';
 import SignupScreen from './SignupScreen';
 
-const GreetingScreen = () => {
-  const [formType, setFormType] = useState(null); // Tracks whether to show "Login" or "Sign Up"
-  const animationValue = useRef(new Animated.Value(0)).current; // Controls the slide animation
-  const [isAnimating, setIsAnimating] = useState(false); // Prevent interaction during animation
+const FloatingCircle = ({ style }) => (
+  <View style={[styles.circle, style]} />
+);
 
-  // Function to slide the form in
+const GreetingScreen = () => {
+  const [formType, setFormType] = useState(null);
+  const animationValue = useRef(new Animated.Value(0)).current;
+  const [isAnimating, setIsAnimating] = useState(false);
+
   const showForm = (type) => {
-    if (isAnimating) return; // Prevent multiple triggers during animation
-    setFormType(type); // Set the form type ("Login" or "Sign Up")
+    if (isAnimating) return;
+    setFormType(type);
     setIsAnimating(true);
     Animated.timing(animationValue, {
-      toValue: 1, // Move the card up
+      toValue: 1,
       duration: 1000,
       useNativeDriver: true,
     }).start(() => setIsAnimating(false));
   };
 
-  // Function to reset to the greeting page
   const hideForm = () => {
-    if (isAnimating) return; // Prevent multiple triggers during animation
+    if (isAnimating) return;
     setIsAnimating(true);
     Animated.timing(animationValue, {
-      toValue: 0, // Move the card back down
+      toValue: 0,
       duration: 500,
       useNativeDriver: true,
     }).start(() => {
       setIsAnimating(false);
-      setFormType(null); // Reset the form type after animation
+      setFormType(null);
     });
   };
 
   const slideUp = animationValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [600, 0], // Adjust based on your screen height
+    outputRange: [600, 0],
   });
 
   return (
     <View style={styles.container}>
-      {/* Greeting Page */}
-      <View style={styles.greetingContainer}>
-        <Text style={styles.title}>Welcome Back!</Text>
-        <Text style={styles.subtitle}>
-          Enter personal details to access your account
-        </Text>
+      {/* Background Circles */}
+      <FloatingCircle style={styles.circle1} />
+      <FloatingCircle style={styles.circle2} />
+      <FloatingCircle style={styles.circle3} />
+      <FloatingCircle style={styles.circle4} />
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => showForm('Login')}
-          accessible
-          accessibilityLabel="Navigate to Sign In Form"
-          accessibilityRole="button"
-        >
-          <Text style={styles.buttonText}>Sign In</Text>
-        </TouchableOpacity>
+      {/* Content Container */}
+      <View style={styles.contentContainer}>
+        {/* Top Section with Title */}
+        <View style={styles.titleSection}>
+          <Text style={styles.title}>Welcome Back!</Text>
+          <Text style={styles.subtitle}>
+            Enter personal details to your employee account
+          </Text>
+        </View>
 
-        <TouchableOpacity
-          style={styles.buttonOutline}
-          onPress={() => showForm('Signup')}
-          accessible
-          accessibilityLabel="Navigate to Sign Up Form"
-          accessibilityRole="button"
-        >
-          <Text style={styles.buttonOutlineText}>Sign Up</Text>
-        </TouchableOpacity>
+        {/* Bottom Section with Buttons */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => showForm('Login')}
+            accessible
+            accessibilityLabel="Navigate to Sign In Form"
+            accessibilityRole="button"
+          >
+            <Text style={styles.buttonText}>Sign in</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.buttonOutline}
+            onPress={() => showForm('Signup')}
+            accessible
+            accessibilityLabel="Navigate to Sign Up Form"
+            accessibilityRole="button"
+          >
+            <Text style={styles.buttonOutlineText}>Sign up</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Sliding Form */}
@@ -99,53 +113,62 @@ const GreetingScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#EEF2FA',
+    backgroundColor: '#c1bbf0', // Updated to new theme color
   },
-  greetingContainer: {
+  contentContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 20,
   },
+  titleSection: {
+    marginTop: '20%',
+    alignItems: 'center',
+  },
   title: {
-    fontSize: 30,
+    fontSize: 32,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: 10,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
-    marginBottom: 50,
+    paddingHorizontal: 20,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: 40,
+    paddingHorizontal: 20,
   },
   button: {
-    backgroundColor: '#6200EE',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    width: '90%',
-    marginVertical: 10,
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 15,
+    paddingHorizontal: 35,
+    borderRadius: 25,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   buttonText: {
-    color: '#fff',
+    color: '#B052F7', // Updated to new theme color
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   buttonOutline: {
-    borderColor: '#6200EE',
-    borderWidth: 2,
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    width: '90%',
-    marginVertical: 10,
+    backgroundColor: 'transparent',
+    paddingVertical: 15,
+    paddingHorizontal: 35,
+    borderRadius: 25,
   },
   buttonOutlineText: {
-    color: '#6200EE',
+    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
   formContainer: {
     position: 'absolute',
@@ -156,9 +179,9 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     padding: 20,
-    elevation: 10, // Shadow for Android
-    shadowColor: '#000', // Shadow for iOS
-    shadowOffset: { width: 0, height: 2 },
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
   },
@@ -167,9 +190,43 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   backText: {
-    color: '#6200EE',
+    color: '#B052F7', // Updated to new theme color
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  // Floating circles styles
+  circle: {
+    position: 'absolute',
+    borderRadius: 999,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  circle1: {
+    width: 150,
+    height: 150,
+    top: -20,
+    right: -20,
+    backgroundColor: 'rgba(176, 82, 247, 0.7)', // Updated with new theme color
+  },
+  circle2: {
+    width: 100,
+    height: 100,
+    top: 100,
+    left: -20,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  circle3: {
+    width: 80,
+    height: 80,
+    top: 200,
+    right: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  circle4: {
+    width: 120,
+    height: 120,
+    bottom: 400,
+    left: 20,
+    backgroundColor: 'rgba(176, 82, 247, 0.5)', // Updated with new theme color
   },
 });
 

@@ -11,6 +11,7 @@ const Profile = () => {
   const animationValue = useRef(new Animated.Value(0)).current; // Controls the slide animation
   const [isAnimating, setIsAnimating] = useState(false); // Prevent interaction during animation
 
+  
   const showForm = (type) => {
       if (isAnimating) return; // Prevent multiple triggers during animation
       setFormType(type); 
@@ -38,7 +39,7 @@ const Profile = () => {
   
     const slideUp = animationValue.interpolate({
       inputRange: [0, 1],
-      outputRange: [600, 500], // Adjust based on your screen height
+      outputRange: [600, 0], // Adjust '600' and '0' as per screen size
     });
   
 
@@ -55,52 +56,47 @@ const Profile = () => {
   };
 
   return (
-    <View style={styles.card}>
-      {/* Profile Picture */}
-      <Image
-        source={{
-          uri: "https://static.vecteezy.com/system/resources/thumbnails/005/544/718/small_2x/profile-icon-design-free-vector.jpg", // Placeholder image
-        }}
-        style={styles.profileImage}
-      />
+    <View style={styles.container}>
+    
 
-      {/* User Information */}
-      <Text style={styles.name}>{user.FName}</Text>
-      <Text style={styles.name}>{user.LName}</Text>
-      <Text style={styles.role}>Student</Text>
+      {/* Profile Section */}
+      <View style={styles.profileSection}>
+        <View style={styles.avatarContainer}>
+          <Icon name="user-circle" size={80} color="#B052F7" />
+        </View>
+        <Text style={styles.userName}>{`${user.FName} ${user.LName}`}</Text>
+      </View>
 
-      {/* Action Buttons */}
-      <View style={styles.actionsContainer}>
-        <TouchableOpacity style={styles.button} 
-          onPress={() => showForm('Edit')}
-        >
-          <Text style={styles.buttonText}> 
-          <Icon name="edit" size={20}></Icon>
-          </Text>
+      {/* Menu Items */}
+      <View style={styles.menuContainer}>
+        <TouchableOpacity style={styles.menuItem} onPress={() => showForm('Edit')}>
+          <Icon name="edit" size={24} color="#B052F7" />
+          <Text style={styles.menuText}>Edit Profile</Text>
+          <Icon name="chevron-right" size={18} color="#B052F7" style={styles.chevron} />
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.logoutButton]}
-          onPress={handleLogout}
-        >
-          <Text style={styles.logoutButtonText}>Logout
-          </Text>
+
+      
+
+        <TouchableOpacity style={styles.menuItem}>
+          <Icon name="info-circle" size={24} color="#B052F7" />
+          <Text style={styles.menuText}>Information</Text>
+          <Icon name="chevron-right" size={18} color="#B052F7" style={styles.chevron} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+          <Icon name="sign-out" size={24} color="#B052F7" />
+          <Text style={styles.menuText}>Log out</Text>
+          <Icon name="chevron-right" size={18} color="#B052F7" style={styles.chevron} />
         </TouchableOpacity>
       </View>
-        {/* Sliding Form */}
-        {formType && (
-        <Animated.View
-          style={[styles.formContainer, { transform: [{ translateY: slideUp }] }]}
-        >
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={hideForm}
-            accessible
-            accessibilityLabel="Go Back to Greeting Screen"
-            accessibilityRole="button"
-          >
-            <Text style={styles.backText}><Icon name="close" size={20} color={'red'}></Icon></Text>
+
+      {/* Sliding Form */}
+      {formType && (
+        <Animated.View style={[styles.formContainer, { transform: [{ translateY: slideUp }] }]}>
+          <TouchableOpacity style={styles.closeButton} onPress={hideForm}>
+            <Icon name="close" size={24} color="#B052F7" />
           </TouchableOpacity>
-          {formType === 'Edit' && <Edit /> }
+          {formType === 'Edit' && <Edit />}
         </Animated.View>
       )}
     </View>
@@ -108,55 +104,53 @@ const Profile = () => {
 };
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 20,
-    margin: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
-    alignItems: "center",
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
   },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+  backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    zIndex: 1,
+  },
+  profileSection: {
+    alignItems: 'center',
+    paddingTop: 35,
+    paddingBottom: 30,
+  },
+  avatarContainer: {
     marginBottom: 15,
   },
-  name: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
+  userName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
   },
-  role: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 15,
+  userRole: {
+    fontSize: 16,
+    color: '#6A11DA',
+    marginBottom: 20,
   },
-  actionsContainer: {
-    flexDirection: "row",
-    marginTop: 20,
-  },
-  button: {
-    backgroundColor: "#6200EE",
-    paddingVertical: 10,
+  menuContainer: {
     paddingHorizontal: 20,
-    borderRadius: 8,
-    marginHorizontal: 5,
   },
-  buttonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "bold",
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
-  logoutButton: {
-    backgroundColor: "#FF6B81",
+  menuText: {
+    fontSize: 16,
+    color: '#333',
+    marginLeft: 15,
+    flex: 1,
   },
-  logoutButtonText: {
-    color: "#fff",
+  chevron: {
+    marginLeft: 'auto',
   },
   formContainer: {
     position: 'absolute',
@@ -167,11 +161,15 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     padding: 20,
-    elevation: 10, // Shadow for Android
-    shadowColor: '#000', // Shadow for iOS
-    shadowOffset: { width: 0, height: 2 },
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -5 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
+  },
+  closeButton: {
+    alignSelf: 'flex-end',
+    padding: 10,
   },
 });
 

@@ -109,11 +109,11 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   link: {
-    color: '#6200EE',
+    color: '#B052F7',
     fontWeight: 'bold',
   },
   button: {
-    backgroundColor: '#6200EE',
+    backgroundColor: '#B052F7',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',

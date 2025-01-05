@@ -77,10 +77,10 @@ const IndexScreen = ({ navigation }) => {
             }
           }}
         >
-          <Icon name="search" size={20} color="#6A11DA" style={styles.searchIcon} />
+          <Icon name="search" size={20} color="#B052F7" style={styles.searchIcon} />
         </TouchableOpacity>
         <TextInput
-          placeholder="Search"
+          placeholder="search a word"
           style={styles.searchInput}
           placeholderTextColor="#B4B4B4"
           value={initialWord}
@@ -118,7 +118,7 @@ const IndexScreen = ({ navigation }) => {
               navigation.navigate(item.name);
             }}
           >
-            <Icon name={item.icon} size={24} color="#6A11DA" />
+            <Icon name={item.icon} size={24} color="#B052F7" />
             <Text style={styles.navText}>{item.name}</Text>
           </TouchableOpacity>
         ))}
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   nameText: {
-    color: '#6A11DA',
+    color: '#B052F7',
     fontWeight: 'bold',
   },
   searchContainer: {

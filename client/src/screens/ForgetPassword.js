@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   buttonOutline: {
-    borderColor: '#6200EE',
+    borderColor: '#B052F7',
     borderWidth: 2,
     padding: 15,
     borderRadius: 8,
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     marginVertical: 0,
   },
   buttonOutlineText: {
-    color: '#6200EE',
+    color: '#B052F7',
     fontSize: 16,
     fontWeight: 'bold',
   },
