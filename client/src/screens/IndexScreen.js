@@ -9,7 +9,7 @@ const { width } = Dimensions.get('window');
 const cardData = [
   {
     title: 'News',
-    subtitle: 'Stay updated with latest educational news',
+    subtitle: 'Stay updated with the latest educational news',
     icon: 'newspaper-o',
     bgColor: '#6B5ECD',
   },
@@ -25,7 +25,14 @@ const cardData = [
     icon: 'book',
     bgColor: '#FF6B81',
   },
+  {
+    title: 'Vocabulary',  // ✅ Added Vocabulary Item
+    subtitle: 'Expand your word knowledge',
+    icon: 'language',
+    bgColor: '#4CAF50',
+  },
 ];
+
 
 const IndexScreen = ({ navigation }) => {
   const { user } = useContext(AuthContext); // Access user data from AuthContext
@@ -106,9 +113,9 @@ const IndexScreen = ({ navigation }) => {
       {/* Bottom Navigation */}
       <Animated.View style={[styles.bottomNav, { opacity: fadeAnim }]}>
         {[
-          { name: 'ReviewMistakes', icon: 'home' },
+          { name: 'Home', icon: 'home' },
           { name: 'Notifications', icon: 'bell' },
-          { name: 'Quiz', icon: 'graduation-cap' },
+          { name: 'Study', icon: 'graduation-cap' },
           { name: 'Profile', icon: 'user' },
         ].map((item, index) => (
           <TouchableOpacity

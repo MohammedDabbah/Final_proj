@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import serverApi from '../../api/serverApi';
 import { AuthContext } from "../../Auth/AuthContext";
+import { CommonActions } from '@react-navigation/native';
 
 const LevelSelectionScreen = ({ navigation }) => {
     const {user} = useContext(AuthContext)
@@ -11,8 +12,14 @@ const LevelSelectionScreen = ({ navigation }) => {
 
     const handleSkipQuiz = async () => {
         try{
-            navigation.navigate('Home', { userLevel: 'beginner' }); // Set default level to beginner
+            // Set default level to beginner
             //const response = await serverApi.post('/userLevel-update', {user}, {withCredentials: true})
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'Home' }]
+                })
+            );
            
         }catch(err){}
     };

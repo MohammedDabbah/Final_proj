@@ -10,7 +10,13 @@ const QuizScreen = ({ route, navigation }) => {
             level={level || 'beginner'} 
             numQuestions={words ? words.length : 10} 
             words={words} 
-            onQuizComplete={(score) => navigation.navigate('ReviewMistakes')}
+            onQuizComplete={(score) => navigation.dispatch(
+                            CommonActions.reset({
+                                index: 0,
+                                routes: [{ name: 'ReviewMistakes' }]
+                                }
+                            ))
+                            }
         />
     );
 };
