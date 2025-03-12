@@ -143,6 +143,72 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
+router.post('/userLevel-update',async (req, res)=>{
+  console.log(req.body);
+});
+
+router.get('/unknown-words', async (req, res) => {
+  const userId = req.user.id; // Ensure user is authenticated
+
+  try {
+      const user = await User.findById(userId);
+      if (!user) return res.status(404).json({ error: "User not found" });
+
+      res.status(200).json({ unknownWords: user.unknownWords });
+  } catch (err) {
+      res.status(500).json({ error: "Error fetching words", message: err.message });
+  }
+});
+
+router.post('/unknown-words', async(req, res)=>{
+  const { unknownWords } = req.body;
+    const userId = req.user.id; // Ensure user is authenticated
+    console.log(userId, 'test');
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        // Append unknown words to user's profile
+        user.unknownWords = [...user.unknownWords, ...unknownWords];
+
+        await user.save();
+        res.status(200).json({ message: "Words saved successfully!" });
+    } catch (err) {
+        res.status(500).json({ error: "Error saving words", message: err.message });
+    }
+});
+
+router.post("/update-unknown-words", async (req, res) => {
+  const { unknownWords } = req.body;
+  const userId = req.user?.id;
+
+  if (!Array.isArray(unknownWords)) {
+      return res.status(400).json({ error: "Invalid data format. Must be an array of objects {word, definition}." });
+  }
+
+  try {
+      const user = await User.findById(userId);
+      if (!user) {
+          console.error("User not found.");
+          return res.status(404).json({ error: "User not found." });
+      }
+
+
+      // Replace stored mistakes with the new list
+      user.unknownWords = unknownWords;
+      await user.save();
+
+      console.log("Updated user mistakes successfully!");
+      res.status(200).json({ message: "User mistakes updated successfully!" });
+  } catch (err) {
+      console.error("ERROR UPDATING USER MISTAKES:", err.stack);
+      res.status(500).json({ error: "Error updating user mistakes", message: err.message });
+  }
+});
+
+
+
 
 
 

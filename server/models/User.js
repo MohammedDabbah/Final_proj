@@ -7,6 +7,14 @@ const UserSchema = new mongoose.Schema({
   LName: { type: String, required: true },
   Email: { type: String, required: true, unique: true },
   Password: { type: String, required: true },
+  userLevel: { 
+    type: String, 
+    required: true, 
+    enum: ['beginner', 'intermediate', 'professional'],// Enum values
+    default: 'beginner',
+  },
+  assessLevel: {type: Boolean, required: true, default: false},
+  unknownWords: [{ word: String, definition: String }],
 });
 
 // Hash Password Before Saving

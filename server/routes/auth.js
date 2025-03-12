@@ -33,8 +33,10 @@ router.get('/Verification', async (req, res) => {
     res.status(500).send('Failed to send verification email');
   }
 });
+
+
 // Register Route
-router.post('/register', async (req, res) => {
+router.post('/register', async (req, res, next) => {
   const { FName, LName, Email, Password, code } = req.body;
 
   if (!FName || !LName || !Email || !Password || !code) {
@@ -42,27 +44,46 @@ router.post('/register', async (req, res) => {
   }
 
   try {
-    // Check if the code matches the stored code
-    if (`${verificationCodes[Email]}` !== code) {
+    // Check if the code matches the stored verification code
+    if (!verificationCodes[Email] || `${verificationCodes[Email]}` !== code) {
       return res.status(400).json({ error: 'Invalid verification code.' });
     }
 
-    // Proceed with user registration
-    const user = new User({ FName, LName, Email, Password });
-    await user.save();
+    // Check if the email is already registered
+    const existingUser = await User.findOne({ Email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email already exists.' });
+    }
 
-    // Remove the code from the in-memory store after successful registration
+
+
+    //  Define newUser before calling req.login()
+    const newUser = new User({
+      FName,
+      LName,
+      Email,
+      Password, // Store the hashed password
+    });
+
+    await newUser.save();
+
+    // Remove verification code after successful registration
     delete verificationCodes[Email];
 
-    res.status(200).json({ message: 'User registered successfully!' });
+    //  Ensure `newUser` is properly defined before using req.login()
+    req.login(newUser, (err) => {
+      if (err) {
+        return res.status(500).json({ error: 'Registration successful, but login failed.' });
+      }
+      return res.status(200).json({ message: 'User registered and logged in successfully!', user: newUser });
+    });
+
   } catch (err) {
-    if (err.code === 11000) {
-      res.status(400).json({ error: 'Email already exists.' });
-    } else {
-      res.status(500).json({ error: 'Error registering user.', message: err.message });
-    }
+    console.error("Registration Error:", err);
+    res.status(500).json({ error: 'Error registering user.', message: err.message });
   }
 });
+
 
   
 
