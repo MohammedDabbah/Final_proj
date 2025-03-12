@@ -106,9 +106,9 @@ const IndexScreen = ({ navigation }) => {
       {/* Bottom Navigation */}
       <Animated.View style={[styles.bottomNav, { opacity: fadeAnim }]}>
         {[
-          { name: 'Home', icon: 'home' },
+          { name: 'ReviewMistakes', icon: 'home' },
           { name: 'Notifications', icon: 'bell' },
-          { name: 'Study', icon: 'graduation-cap' },
+          { name: 'Quiz', icon: 'graduation-cap' },
           { name: 'Profile', icon: 'user' },
         ].map((item, index) => (
           <TouchableOpacity

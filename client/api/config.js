@@ -1,2 +1,3 @@
 export const MERRIAM_WEBSTER_SCHOOL_KEY = "d30e7e50-14e2-4b3d-822e-c3c3861c2e80";
 export const MERRIAM_WEBSTER_LEARNER_KEY = "6e37d669-8c74-4bf3-923d-04f24f4f9ef0";
+export const NEWS_API_KEY = "8a913e1a31484101ba5b54d4ff088f2b";

@@ -26,6 +26,7 @@ const RenderCard = ({ item, index, fadeAnim, slideAnim, scaleAnim, navigation })
         onPress={() => {
           if (index === 0) {
             console.log('news pressed');
+            navigation.navigate('News')
           } else if (index === 1) {
             console.log('write pressed');
           } else if (index === 2) {

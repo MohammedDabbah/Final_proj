@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import serverApi from '../../api/serverApi';
+import { AuthContext } from "../../Auth/AuthContext";
+
 
 const SignupScreen = () => {
+  const { setUser } = useContext(AuthContext); // Access setUser from AuthContext
   const [fName, setFName] = useState('');
   const [lName, setLName] = useState('');
   const [email, setEmail] = useState('');
@@ -11,6 +14,7 @@ const SignupScreen = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
 
   const handleSendVerificationCode = async () => {
     if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
@@ -57,6 +61,7 @@ const SignupScreen = () => {
 
       if (response.status === 200) {
         alert('User registered successfully!');
+        setUser(response.data.user); // Set the authenticated user in AuthContext
         setFName('');
         setLName('');
         setEmail('');
