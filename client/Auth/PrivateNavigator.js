@@ -8,6 +8,7 @@ import LevelSelectionScreen from "../src/screens/LevelSelectionScreen";
 import NewsScreen from "../src/screens/NewsScreen";
 import ReviewMistakesScreen from "../src/screens/ReviewMistakesScreen";
 import VocabularyScreen from "../src/screens/VocabularyScreen";
+import AssessmentScreen from "../src/screens/AssessmentScreen";
 
 const Stack = createStackNavigator();
 
@@ -22,6 +23,7 @@ const PrivateNavigator = () => {
       <Stack.Screen name="News" component={NewsScreen} />
       <Stack.Screen name="ReviewMistakes" component={ReviewMistakesScreen} />
       <Stack.Screen name="Vocabulary" component={VocabularyScreen} />
+      <Stack.Screen name="AssessmentScreen" component={AssessmentScreen} />
     </Stack.Navigator>
   );
 };
