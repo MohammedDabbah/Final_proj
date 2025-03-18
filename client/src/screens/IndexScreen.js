@@ -42,6 +42,8 @@ const IndexScreen = ({ navigation }) => {
   const slideAnim = useRef(new Animated.Value(width)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
 
+  
+
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {

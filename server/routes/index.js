@@ -143,9 +143,39 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
-router.post('/userLevel-update',async (req, res)=>{
-  console.log(req.body);
+router.post('/userLevel-update', async (req, res) => {
+  try {
+      const { user, score } = req.body; // Get user email & score
+      console.log("📩 Received request:", req.body);
+
+      // 🏆 Determine the user's level based on the average score
+      let userLevel = "beginner";
+      if (score >= 7) {
+          userLevel = "advanced";
+      } else if (score >= 4) {
+          userLevel = "intermediate";
+      }
+
+      // ✅ Update User Level in MongoDB
+      const updatedUser = await User.findOne({_id : user._id});
+
+      if (!updatedUser) {
+          return res.status(404).json({ message: "User not found." });
+      }
+
+      updatedUser.userLevel = userLevel;
+      updatedUser.evaluate = true;
+      await updatedUser.save();
+
+      console.log("✅ User Level Updated:", updatedUser);
+      res.status(200).json({ message: "User level updated successfully", userLevel });
+
+  } catch (error) {
+      console.error("❌ Error updating user level:", error);
+      res.status(500).json({ message: "Server error" });
+  }
 });
+
 
 router.get('/unknown-words', async (req, res) => {
   const userId = req.user.id; // Ensure user is authenticated

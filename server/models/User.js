@@ -10,10 +10,10 @@ const UserSchema = new mongoose.Schema({
   userLevel: { 
     type: String, 
     required: true, 
-    enum: ['beginner', 'intermediate', 'professional'],// Enum values
+    enum: ['beginner', 'intermediate', 'advanced'],// Enum values
     default: 'beginner',
   },
-  assessLevel: {type: Boolean, required: true, default: false},
+  evaluate: {type: Boolean, required: true, default: false},
   unknownWords: [{ word: String, definition: String }],
 });
 

@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState ,useContext } from 'react';
 import { View, Text, TextInput, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Audio } from 'expo-av';
+import aiApi from "../../api/aiApi"; // Import AI API setup
+import serverApi from '../../api/serverApi';
+import { AuthContext } from '../../Auth/AuthContext';
+import { AI_API_KEY } from '../../api/config';
+
 
 const AssessmentScreen = ({ route, navigation }) => {
     const { questions } = route.params;
-
+    const { user } = useContext(AuthContext); // Access user data from AuthContext
     const [responses, setResponses] = useState({});
     const [currentRecording, setCurrentRecording] = useState(null); // Stores the active recording object
     const [recordingIndex, setRecordingIndex] = useState(null); // Tracks which question is being recorded
@@ -79,6 +84,125 @@ const AssessmentScreen = ({ route, navigation }) => {
         }
     };
 
+    const handleSubmit = async () => {
+        setLoading(true);
+        let speechEvaluations = [];
+        let readingEvaluations = [];
+        let totalScore = 0;
+        let totalQuestions = 0;
+    
+        try {
+            // ✅ Process Reading Responses
+            for (const index in responses) {
+                const userAnswer = responses[index];
+    
+                try {
+                    const gptReadingResponse = await aiApi.post("/chat/completions", {
+                        model: "gpt-4",
+                        messages: [
+                            { role: "system", content: "Evaluate reading comprehension. Provide a score (0-10) and feedback." },
+                            { role: "user", content: userAnswer }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 500,
+                    });
+    
+                    const feedback = gptReadingResponse.data.choices[0].message.content;
+                    const score = parseFloat(feedback.match(/\d+/)?.[0] || 0);
+    
+                    totalScore += score;
+                    totalQuestions++;
+    
+                    readingEvaluations.push({ questionIndex: index, userAnswer, feedback, score });
+    
+                } catch (error) {
+                    console.error("❌ Error evaluating reading:", error.response?.data || error);
+                    alert("Reading evaluation failed. Try again.");
+                    readingEvaluations.push({ questionIndex: index, error: "Reading evaluation failed." });
+                }
+            }
+    
+            // ✅ Process Speech Responses (as before)
+            for (const index in audioUri) {
+                const uri = audioUri[index];
+    
+                try {
+                    const formData = new FormData();
+                    formData.append("file", {
+                        uri: uri,
+                        type: "audio/m4a",
+                        name: `speech_recording_${index}.m4a`,
+                    });
+                    formData.append("model", "whisper-1");
+    
+                    const whisperResponse = await aiApi.post("/audio/transcriptions", formData, {
+                        headers: {
+                            "Authorization": `Bearer ${AI_API_KEY}`,
+                            "Content-Type": "multipart/form-data",
+                        },
+                    });
+    
+                    const transcript = whisperResponse.data.text;
+                    console.log("✅ Transcription success:", transcript);
+    
+                    // 🎙 Evaluate Speech
+                    const gptSpeechResponse = await aiApi.post("/chat/completions", {
+                        model: "gpt-4",
+                        messages: [
+                            { role: "system", content: "Evaluate pronunciation, fluency, and grammar. Provide a score (0-10) and feedback." },
+                            { role: "user", content: transcript }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 500,
+                    });
+    
+                    const feedback = gptSpeechResponse.data.choices[0].message.content;
+                    const score = parseFloat(feedback.match(/\d+/)?.[0] || 0);
+    
+                    totalScore += score;
+                    totalQuestions++;
+    
+                    speechEvaluations.push({ questionIndex: index, transcript, feedback, score });
+    
+                } catch (error) {
+                    console.error("❌ Error evaluating speech:", error.response?.data || error);
+                    alert("Speech evaluation failed.");
+                    speechEvaluations.push({ questionIndex: index, error: "Speech evaluation failed." });
+                }
+            }
+    
+            // 🎯 Calculate Average Score
+            const averageScore = totalQuestions > 0 ? (totalScore / totalQuestions).toFixed(2) : 0;
+    
+            // ✅ Send to Backend Even if Partial Evaluations Succeeded
+            try {
+                await serverApi.post("/userLevel-update", {
+                    user,
+                    score: averageScore
+                }, { withCredentials: true });
+            } catch (error) {
+                console.error("❌ Error updating user level:", error.response?.data || error);
+                alert("Failed to update user level.");
+            }
+    
+            // ✅ Navigate to ResultsScreen
+            navigation.navigate("ResultsScreen", { 
+                readingEvaluations: readingEvaluations || [], 
+                speechEvaluations: speechEvaluations || [], 
+                averageScore: averageScore || 0
+            });
+    
+        } catch (error) {
+            console.error("❌ Unexpected Error:", error);
+            alert("An unexpected error occurred. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    
+    
+
     return (
         <ScrollView style={styles.container}>
             <Text style={styles.header}>Level Assessment</Text>
@@ -87,24 +211,24 @@ const AssessmentScreen = ({ route, navigation }) => {
                 <View key={index} style={styles.questionContainer}>
                     <Text style={styles.questionType}>{question.type.toUpperCase()}</Text>
 
-                    {question.type === "reading" && question.prompt && (
+                   {/* ✅ Fixed Reading Questions (Passage + Input) */}
+                   {question.type === "reading" && question.prompt && (
                         <>
                             <Text style={styles.passage}>{question.prompt.passage}</Text>
                             <Text style={styles.question}>{question.prompt.question}</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Type your answer..."
+                                value={responses[index] || ""}
+                                onChangeText={(text) => setResponses({ ...responses, [index]: text })}
+                            />
                         </>
                     )}
 
-                    {question.type === "writing" && (
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Your response..."
-                            value={responses[index] || ""}
-                            onChangeText={(text) => setResponses({ ...responses, [index]: text })}
-                        />
-                    )}
-
-                    {question.type === "speaking" && (
+                   {/* ✅ Speaking Questions */}
+                   {question.type === "speaking" && (
                         <>
+                            <Text style={styles.question}>{question.prompt}</Text>
                             {audioUri[index] ? (
                                 <TouchableOpacity style={styles.playButton} onPress={() => playRecording(index)}>
                                     <Text style={styles.buttonText}>🎧 Play Recording</Text>
@@ -127,7 +251,7 @@ const AssessmentScreen = ({ route, navigation }) => {
             {loading ? (
                 <ActivityIndicator size="large" color="#6B5ECD" />
             ) : (
-                <TouchableOpacity style={styles.submitButton} onPress={() => console.log("Submit responses")}>
+                <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
                     <Text style={styles.submitText}>Submit Assessment</Text>
                 </TouchableOpacity>
             )}

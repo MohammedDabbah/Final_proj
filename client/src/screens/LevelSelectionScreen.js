@@ -3,9 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'rea
 import serverApi from '../../api/serverApi';
 import { AuthContext } from "../../Auth/AuthContext";
 import { CommonActions } from '@react-navigation/native';
-import axios from 'axios';
-import dotenv from 'dotenv';
-dotenv.config();
+import aiApi from "../../api/aiApi"; // Import AI API setup
 
 const LevelSelectionScreen = ({ navigation }) => {
     const { user, updateUser } = useContext(AuthContext);
@@ -14,8 +12,8 @@ const LevelSelectionScreen = ({ navigation }) => {
     const handleTakeQuiz = async () => {
         setLoading(true);
         try {
-            const response = await axios.post(
-                'https://api.openai.com/v1/chat/completions',
+            const response = await aiApi.post(
+                '/chat/completions',
                 {
                     model: "gpt-4",
                     messages: [
@@ -25,22 +23,18 @@ const LevelSelectionScreen = ({ navigation }) => {
                             - 2 questions for each level (beginner, intermediate, advanced).
                             - Each level should include:
                               1. A reading comprehension question (with a short passage).
-                              2. A writing prompt.
-                              3. A speaking question.
+                              2. A speaking question.
     
                             Return the response in JSON format:
                             {
                                 "questions": [
                                     { "level": "beginner", "type": "reading", "prompt": { "passage": "...", "question": "..." } },
-                                    { "level": "beginner", "type": "writing", "prompt": "..." },
                                     { "level": "beginner", "type": "speaking", "prompt": "..." },
                                     
                                     { "level": "intermediate", "type": "reading", "prompt": { "passage": "...", "question": "..." } },
-                                    { "level": "intermediate", "type": "writing", "prompt": "..." },
                                     { "level": "intermediate", "type": "speaking", "prompt": "..." },
     
                                     { "level": "advanced", "type": "reading", "prompt": { "passage": "...", "question": "..." } },
-                                    { "level": "advanced", "type": "writing", "prompt": "..." },
                                     { "level": "advanced", "type": "speaking", "prompt": "..." }
                                 ]
                             }`
@@ -49,12 +43,7 @@ const LevelSelectionScreen = ({ navigation }) => {
                     temperature: 0.7,
                     max_tokens: 700
                 },
-                {
-                    headers: {
-                        "Authorization": `Bearer ${process.env.AI_API_KEY}`, // ⚠️ Use an environment variable instead!
-                        "Content-Type": "application/json",
-                    },
-                }
+                
             );
     
             const responseData = response.data.choices[0].message.content;
@@ -78,22 +67,28 @@ const LevelSelectionScreen = ({ navigation }) => {
 
     const handleSkipQuiz = async () => {
         try {
-            // ✅ Default level is beginner
-            await serverApi.post('/userLevel-update', { userLevel: 'beginner' }, { withCredentials: true });
-
-            updateUser({ userLevel: 'beginner' });
-
-            // ✅ Navigate to home screen
-            navigation.dispatch(
-                CommonActions.reset({
+            // ✅ Ensure userLevel updates properly
+            const response = await serverApi.post('/userLevel-update', { user, score: 0 }, { withCredentials: true });
+    
+            console.log("✅ User Level Updated:", response.data);
+    
+            // ✅ Update AuthContext so PrivateNavigator re-renders
+            updateUser({ evaluate: true });
+    
+            // ✅ Use `setTimeout` to delay navigation slightly
+            setTimeout(() => {
+                console.log("🔄 Navigating to Home...");
+                navigation.reset({
                     index: 0,
-                    routes: [{ name: 'Home' }]
-                })
-            );
+                    routes: [{ name: "Home" }], // ✅ Ensure this matches your navigator's screen name
+                });
+            }, 500);
+            
         } catch (err) {
-            console.error("Error updating user level:", err);
+            console.error("❌ Error updating user level:", err);
         }
     };
+    
 
     return (
         <View style={styles.container}>
