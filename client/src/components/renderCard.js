@@ -9,9 +9,9 @@ const RenderCard = ({ item, index, fadeAnim, slideAnim, scaleAnim, navigation })
         if (index === 0) {
             navigation.navigate('News');
         } else if (index === 1) {
-            console.log('Write pressed');
+            navigation.navigate('ImproveWritingScreen');
         } else if (index === 2) {
-            console.log('Reading pressed');
+            navigation.navigate('ImproveReadingScreen');
         } else if (index === 3) { // Vocabulary Card
             setModalVisible(true);
         }

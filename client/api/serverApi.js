@@ -2,5 +2,5 @@ import axios from "axios";
 
 export default axios.create({
   baseURL: 'http://localhost:3000', // Fixed base URL
-  // baseURL: 'http://10.0.0.5:3000', //Accessing the Server from Device Using Browser
+  // baseURL: 'http://10.0.0.7:3000', //Accessing the Server from Device Using Browser
 });

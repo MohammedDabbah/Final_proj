@@ -11,6 +11,11 @@ import VocabularyScreen from "../src/screens/VocabularyScreen";
 import AssessmentScreen from "../src/screens/AssessmentScreen";
 import ResultsScreen from "../src/screens/ResultsScreen";
 import { AuthContext } from "../Auth/AuthContext";
+import ImproveWritingScreen from '../src/screens/ImproveWritingScreen';
+import SentencePracticeWriting from '../src/screens/SentencePracticeWriting';
+import WordsPracticeWriting from '../src/screens/WordsPracticeWriting';
+import ImproveReadingScreen from '../src/screens/ImproveReadingScreen';
+
 
 const Stack = createStackNavigator();
 
@@ -35,6 +40,14 @@ const PrivateNavigator = () => {
       <Stack.Screen name="Vocabulary" component={VocabularyScreen} />
       <Stack.Screen name="AssessmentScreen" component={AssessmentScreen} />
       <Stack.Screen name="ResultsScreen" component={ResultsScreen} />
+      <Stack.Screen name="ImproveWritingScreen" component={ImproveWritingScreen} />
+      <Stack.Screen name="SentencePracticeWriting" component={SentencePracticeWriting} />
+      <Stack.Screen name="WordsPracticeWriting" component={WordsPracticeWriting} />
+      <Stack.Screen name="ImproveReadingScreen" component={ImproveReadingScreen} />
+
+
+
+
     </Stack.Navigator>
   );
 };

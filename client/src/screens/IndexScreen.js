@@ -100,6 +100,7 @@ const IndexScreen = ({ navigation }) => {
       {/* Cards Container */}
       <View style={styles.cardsContainer}>
         {cardData.map((item, index) => (
+          
           <RenderCard
             key={index}
             item={item}
@@ -108,6 +109,7 @@ const IndexScreen = ({ navigation }) => {
             slideAnim={slideAnim}
             scaleAnim={scaleAnim}
             navigation={navigation}
+            
           />
         ))}
       </View>
