@@ -17,6 +17,7 @@ const LoginScreen = () => {
   const navigation = useNavigation(); // Corrected navigation hook
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("user"); // ✅ Role state
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
@@ -27,7 +28,7 @@ const LoginScreen = () => {
 
     try {
       setLoading(true);
-      const response = await serverApi.post("/auth/login", { email, password }, { withCredentials: true });
+      const response = await serverApi.post("/auth/login", { email, password, role }, { withCredentials: true });
 
       if (response.status === 200) {
         const loggedInUser = response.data.user;
@@ -52,6 +53,26 @@ const LoginScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome Back</Text>
+      <View style={styles.roleSelector}>
+        <TouchableOpacity
+          style={[
+            styles.roleButton,
+            role === "user" && styles.roleSelected
+          ]}
+          onPress={() => setRole("user")}
+        >
+          <Text style={styles.roleText}>User</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.roleButton,
+            role === "teacher" && styles.roleSelected
+          ]}
+          onPress={() => setRole("teacher")}
+        >
+          <Text style={styles.roleText}>Teacher</Text>
+        </TouchableOpacity>
+      </View>
       <TextInput
         placeholder="Email"
         autoCapitalize="none"
@@ -140,6 +161,25 @@ const styles = StyleSheet.create({
   icon: {
     marginHorizontal: 10,
   },
+  roleSelector: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  roleButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    backgroundColor: "#ccc",
+    marginHorizontal: 10,
+  },
+  roleSelected: {
+    backgroundColor: "#6B5ECD",
+  },
+  roleText: {
+    color: "#fff",
+    fontWeight: "bold",
+  }
 });
 
 export default LoginScreen;

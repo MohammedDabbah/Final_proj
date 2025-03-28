@@ -2,6 +2,7 @@ const express = require('express');
 const passport = require('passport');
 const cors = require('cors');
 const User = require('../models/User');
+const Teacher = require('../models/Teacher');
 const { generateFourDigitCode, sendEmail } = require('../config/nodemailer');
 
 const corsOptions = {
@@ -37,9 +38,9 @@ router.get('/Verification', async (req, res) => {
 
 // Register Route
 router.post('/register', async (req, res, next) => {
-  const { FName, LName, Email, Password, code } = req.body;
+  const { FName, LName, Email, Password, code, role } = req.body;
 
-  if (!FName || !LName || !Email || !Password || !code) {
+  if (!FName || !LName || !Email || !Password || !code || !role) {
     return res.status(400).json({ error: 'All fields, including the verification code, are required.' });
   }
 
@@ -49,8 +50,10 @@ router.post('/register', async (req, res, next) => {
       return res.status(400).json({ error: 'Invalid verification code.' });
     }
 
+    const UserModel = role === 'teacher' ? Teacher : User;
+
     // Check if the email is already registered
-    const existingUser = await User.findOne({ Email });
+    const existingUser = await UserModel.findOne({ Email });
     if (existingUser) {
       return res.status(400).json({ error: 'Email already exists.' });
     }
@@ -58,7 +61,7 @@ router.post('/register', async (req, res, next) => {
 
 
     //  Define newUser before calling req.login()
-    const newUser = new User({
+    const newUser = new UserModel({
       FName,
       LName,
       Email,

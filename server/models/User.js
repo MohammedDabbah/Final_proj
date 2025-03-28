@@ -15,6 +15,7 @@ const UserSchema = new mongoose.Schema({
   },
   evaluate: {type: Boolean, required: true, default: false},
   unknownWords: [{ word: String, definition: String }],
+  Followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // 👈 OPTIONAL
 });
 
 // Hash Password Before Saving

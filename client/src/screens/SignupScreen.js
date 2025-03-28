@@ -13,6 +13,7 @@ const SignupScreen = () => {
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState("user"); // ✅ Role state
   const [loading, setLoading] = useState(false);
 
 
@@ -55,6 +56,7 @@ const SignupScreen = () => {
           Email: email,
           code,
           Password: password,
+          role
         },
         { withCredentials: true }
       );
@@ -84,6 +86,26 @@ const SignupScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Get Started</Text>
+      <View style={styles.roleSelector}>
+          <TouchableOpacity
+            style={[
+              styles.roleButton,
+              role === "user" && styles.roleSelected
+            ]}
+            onPress={() => setRole("user")}
+          >
+            <Text style={styles.roleText}>User</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.roleButton,
+              role === "teacher" && styles.roleSelected
+            ]}
+            onPress={() => setRole("teacher")}
+          >
+            <Text style={styles.roleText}>Teacher</Text>
+          </TouchableOpacity>
+        </View>
       <TextInput
         placeholder="First Name"
         autoCapitalize="none"
@@ -228,6 +250,25 @@ const styles = StyleSheet.create({
   icon: {
     marginHorizontal: 10,
   },
+  roleSelector: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  roleButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    backgroundColor: "#ccc",
+    marginHorizontal: 10,
+  },
+  roleSelected: {
+    backgroundColor: "#6B5ECD",
+  },
+  roleText: {
+    color: "#fff",
+    fontWeight: "bold",
+  }
 });
 
 export default SignupScreen;
