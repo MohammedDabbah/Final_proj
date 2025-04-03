@@ -15,6 +15,7 @@ import ImproveWritingScreen from '../src/screens/ImproveWritingScreen';
 import SentencePracticeWriting from '../src/screens/SentencePracticeWriting';
 import WordsPracticeWriting from '../src/screens/WordsPracticeWriting';
 import ImproveReadingScreen from '../src/screens/ImproveReadingScreen';
+import ProgressScreen from '../src/screens/ProgressScreen';
 
 
 const Stack = createStackNavigator();
@@ -44,6 +45,7 @@ const PrivateNavigator = () => {
       <Stack.Screen name="SentencePracticeWriting" component={SentencePracticeWriting} />
       <Stack.Screen name="WordsPracticeWriting" component={WordsPracticeWriting} />
       <Stack.Screen name="ImproveReadingScreen" component={ImproveReadingScreen} />
+      <Stack.Screen name="Progress" component={ProgressScreen} options={{ title: 'My Progress' }} />
 
 
 

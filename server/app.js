@@ -4,7 +4,8 @@ const passport = require('./config/passport');
 const connectDB = require('./config/database');
 const routes = require('./routes/index');
 const cors = require('cors');
-
+// Import the progress routes
+const progressRoutes = require('./routes/progressRoutes');
 const app = express();
 const port = 3000;
 
@@ -32,7 +33,8 @@ app.use(passport.session());
 
 // Routes
 app.use('/', routes);
-
+// Add the progress routes
+app.use('/api/progress', progressRoutes);
 // Start the Server
 app.listen(port, () => {
   console.log(`Server started at http://localhost:${port}`);

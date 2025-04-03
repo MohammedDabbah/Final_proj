@@ -12,6 +12,7 @@ import * as Speech from 'expo-speech';
 import { Audio } from 'expo-av';
 import aiApi from "../../api/aiApi";
 import { AI_API_KEY } from '../../api/config';
+import serverApi from "../../api/serverApi";
 
 const ImproveReadingScreen = () => {
   // State Management
@@ -280,6 +281,23 @@ const ImproveReadingScreen = () => {
 
   // Reset Game
   const resetGame = () => {
+    // If the game was completed, update the progress
+  if (gameCompleted) {
+    const totalItems = currentIndex + 1;
+    const correctItems = totalItems - skippedItems;
+    
+    if (mode === 'word') {
+      updateWordReadingProgress({
+        totalWords: totalItems,
+        correctPronunciations: correctItems
+      });
+    } else {
+      updateSentenceReadingProgress({
+        totalSentences: totalItems,
+        correctPronunciations: correctItems
+      });
+    }
+  }
     // Stop any ongoing speech
     Speech.stop();
     
@@ -310,6 +328,32 @@ const ImproveReadingScreen = () => {
       </TouchableOpacity>
     </View>
   );
+  //update progress for both word and sentence modes
+  const updateWordReadingProgress = async (gameStats) => {
+    try {
+      const response = await serverApi.post('/api/progress/reading/wordReading', {
+        totalWords: gameStats.totalWords,
+        correctPronunciations: gameStats.correctPronunciations
+      });
+      
+      console.log('Word reading progress updated:', response.data);
+    } catch (error) {
+      console.error('Error updating progress:', error);
+    }
+  };
+  
+  const updateSentenceReadingProgress = async (gameStats) => {
+    try {
+      const response = await serverApi.post('/api/progress/reading/sentenceReading', {
+        totalSentences: gameStats.totalSentences,
+        correctPronunciations: gameStats.correctPronunciations
+      });
+      
+      console.log('Sentence reading progress updated:', response.data);
+    } catch (error) {
+      console.error('Error updating progress:', error);
+    }
+  };
 
   // Render Practice Screen
   const renderPracticeScreen = () => {
@@ -398,31 +442,49 @@ const ImproveReadingScreen = () => {
   };
 
   // Render Game Completed Modal
-  const renderGameCompletedModal = () => (
-    <Modal
-      visible={gameCompleted}
-      transparent={true}
-      animationType="slide"
-    >
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Congratulations!</Text>
-          <Text style={styles.modalText}>
-            You've completed the {mode} practice!
-          </Text>
-          <Text style={styles.modalSubtext}>
-            Skipped Items: {skippedItems}
-          </Text>
-          <TouchableOpacity 
-            style={styles.modalButton} 
-            onPress={resetGame}
-          >
-            <Text style={styles.buttonText}>Play Again</Text>
-          </TouchableOpacity>
-        </View>
+const renderGameCompletedModal = () => (
+  <Modal
+    visible={gameCompleted}
+    transparent={true}
+    animationType="slide"
+  >
+    <View style={styles.modalContainer}>
+      <View style={styles.modalContent}>
+        <Text style={styles.modalTitle}>Congratulations!</Text>
+        <Text style={styles.modalText}>
+          You've completed the {mode} practice!
+        </Text>
+        <Text style={styles.modalSubtext}>
+          Skipped Items: {skippedItems}
+        </Text>
+        <TouchableOpacity 
+          style={styles.modalButton} 
+          onPress={() => {
+            // Add progress tracking before resetting
+            const totalItems = 10; // Assuming 10 items total
+            const correctItems = totalItems - skippedItems;
+            
+            if (mode === 'word') {
+              updateWordReadingProgress({
+                totalWords: totalItems,
+                correctPronunciations: correctItems
+              });
+            } else {
+              updateSentenceReadingProgress({
+                totalSentences: totalItems,
+                correctPronunciations: correctItems
+              });
+            }
+            
+            resetGame();
+          }}
+        >
+          <Text style={styles.buttonText}>Play Again</Text>
+        </TouchableOpacity>
       </View>
-    </Modal>
-  );
+    </View>
+  </Modal>
+);
 
   return (
     <View style={styles.container}>

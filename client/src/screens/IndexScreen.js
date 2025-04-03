@@ -119,7 +119,7 @@ const IndexScreen = ({ navigation }) => {
         {[
           { name: 'Home', icon: 'home' },
           { name: 'Notifications', icon: 'bell' },
-          { name: 'Study', icon: 'graduation-cap' },
+          { name: 'Progress', icon: 'graduation-cap' },
           { name: 'Profile', icon: 'user' },
         ].map((item, index) => (
           <TouchableOpacity

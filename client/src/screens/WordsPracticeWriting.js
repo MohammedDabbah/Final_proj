@@ -6,9 +6,12 @@ import {
   TextInput, 
   StyleSheet,
   SafeAreaView,
-  Alert
+  Alert,
 } from 'react-native';
 import aiApi from "../../api/aiApi";
+import axios from 'axios';
+import serverApi from "../../api/serverApi";
+import Icon from 'react-native-vector-icons/Feather'; // Assuming you already have this
 
 const WordPracticeGame = () => {
   // Game state
@@ -26,6 +29,7 @@ const WordPracticeGame = () => {
   const [isWordVisible, setIsWordVisible] = useState(true);
   const [countdownValue, setCountdownValue] = useState(3);
   const countdownTimerRef = useRef(null);
+  const [progressUpdated, setProgressUpdated] = useState(false);
 
   // Fetch a batch of 10 words from OpenAI API
   const fetchWordBatch = async () => {
@@ -231,6 +235,16 @@ const WordPracticeGame = () => {
     
     if (nextIndex >= 10) {
       // Round completed
+      // Calculate stats for progress tracking
+      const correctWords = Math.floor(score / 4); // Assuming max 4 points per word
+      const gameStats = {
+        totalWords: 10,
+        correctWords: correctWords,
+        score: score
+      };
+      // Update progress
+      updateProgress(gameStats);
+
       Alert.alert(
         "Round Completed!", 
         `You've completed round ${round} with a score of ${score}.\n\nWould you like to play another round?`,
@@ -300,10 +314,26 @@ const WordPracticeGame = () => {
       }
     };
   }, []);
-
+  // update progress
+  const updateProgress = async (gameStats) => {
+    try {
+      const response = await serverApi.post('/api/progress/writing/wordPractice', {
+        totalWords: gameStats.totalWords,
+        correctWords: gameStats.correctWords, 
+        score: gameStats.score
+      });
+      
+      console.log('Progress updated:', response.data);
+    } catch (error) {
+      console.error('Error updating progress:', error);
+    }
+  };
   // Render functions for different game states
   const renderInitScreen = () => (
     <View style={styles.contentContainer}>
+      <View style={styles.logoContainer}>
+        <Icon name="book" size={50} color="#B052F7" />
+      </View>
       <Text style={styles.welcomeTitle}>Word Memory Game</Text>
       <Text style={styles.instructions}>
         Memorize the word shown on screen.
@@ -320,6 +350,7 @@ const WordPracticeGame = () => {
         <Text style={styles.startButtonText}>
           {isLoading ? "Loading..." : "Start Game"}
         </Text>
+        {!isLoading && <Icon name="play" size={20} color="white" style={styles.buttonIcon} />}
       </TouchableOpacity>
     </View>
   );
@@ -334,10 +365,13 @@ const WordPracticeGame = () => {
         </Text>
         
         {isWordVisible ? (
-          <Text style={styles.word}>{currentWord}</Text>
+          <View style={styles.wordCard}>
+            <Text style={styles.word}>{currentWord}</Text>
+          </View>
         ) : (
           <View style={styles.hiddenWordContainer}>
-            
+            <Icon name="eye-off" size={24} color="#B052F7" />
+            <Text style={styles.hiddenWordText}>Word is hidden</Text>
           </View>
         )}
       </View>
@@ -351,7 +385,7 @@ const WordPracticeGame = () => {
             {/* Backspace button */}
             {userInput.length > 0 && (
               <TouchableOpacity style={styles.backspaceButton} onPress={removeLastLetter}>
-                <Text style={styles.backspaceText}>←</Text>
+                <Icon name="delete" size={20} color="white" />
               </TouchableOpacity>
             )}
           </View>
@@ -377,6 +411,7 @@ const WordPracticeGame = () => {
               onPress={resetWord}
             >
               <Text style={styles.secondaryButtonText}>Reset</Text>
+              <Icon name="refresh-cw" size={16} color="#B052F7" style={styles.secondaryButtonIcon} />
             </TouchableOpacity>
             
             <TouchableOpacity 
@@ -388,6 +423,7 @@ const WordPracticeGame = () => {
               disabled={userInput.length === 0}
             >
               <Text style={styles.primaryButtonText}>Check</Text>
+              <Icon name="check" size={16} color="white" style={styles.buttonIcon} />
             </TouchableOpacity>
           </View>
         </>
@@ -401,7 +437,11 @@ const WordPracticeGame = () => {
           feedback.includes("correct word") ? styles.failureFeedback : 
           styles.neutralFeedback
         ]}>
-          <Text style={styles.feedbackText}>{feedback}</Text>
+          <Text style={styles.feedbackText}>
+            {feedback.includes("Correct") && <Icon name="check-circle" size={20} color="#4CAF50" />}
+            {feedback.includes("correct word") && <Icon name="x-circle" size={20} color="#F44336" />}
+            {' '}{feedback}
+          </Text>
         </View>
       )}
     </View>
@@ -409,11 +449,30 @@ const WordPracticeGame = () => {
 
   const renderCompletedScreen = () => (
     <View style={styles.contentContainer}>
+      <View style={styles.completedIconContainer}>
+        <Icon name="award" size={80} color="#B052F7" />
+      </View>
       <Text style={styles.completedTitle}>Game Completed!</Text>
       <Text style={styles.completedScore}>Final Score: {score}</Text>
       <Text style={styles.completedRound}>Rounds Completed: {round}</Text>
-      <TouchableOpacity style={styles.startButton} onPress={startGame}>
+      
+      <TouchableOpacity 
+        style={styles.startButton} 
+        onPress={() => {
+          // Update progress if not already updated
+          if (!progressUpdated) {
+            const correctWords = Math.floor(score / 4);
+            updateProgress({
+              totalWords: 10 * round,
+              correctWords: correctWords,
+              score: score
+            });
+          }
+          startGame();
+        }}
+      >
         <Text style={styles.startButtonText}>Play Again</Text>
+        <Icon name="refresh-cw" size={20} color="white" style={styles.buttonIcon} />
       </TouchableOpacity>
     </View>
   );
@@ -430,12 +489,14 @@ const WordPracticeGame = () => {
         <View style={styles.infoCard}>
           <View style={styles.infoRow}>
             <View style={styles.infoItem}>
+              <Icon name="flag" size={16} color="#B052F7" />
               <Text style={styles.infoLabel}>Round</Text>
               <Text style={styles.infoValue}>{round}</Text>
             </View>
             
             {gameState === 'inProgress' && (
               <View style={styles.infoItem}>
+                <Icon name="book-open" size={16} color="#B052F7" />
                 <Text style={styles.infoLabel}>Word</Text>
                 <Text style={styles.infoValue}>{wordIndex + 1}/10</Text>
               </View>
@@ -443,12 +504,14 @@ const WordPracticeGame = () => {
             
             {gameState === 'inProgress' && (
               <View style={styles.infoItem}>
+                <Icon name="repeat" size={16} color="#B052F7" />
                 <Text style={styles.infoLabel}>Attempt</Text>
                 <Text style={styles.infoValue}>{attempts + 1}/3</Text>
               </View>
             )}
             
             <View style={styles.infoItem}>
+              <Icon name="star" size={16} color="#B052F7" />
               <Text style={styles.infoLabel}>Score</Text>
               <Text style={styles.infoValue}>{score}</Text>
             </View>
@@ -467,29 +530,39 @@ const WordPracticeGame = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8F8FF',
   },
   container: {
     flex: 1,
-    padding: 16,
   },
   header: {
-    backgroundColor: '#5B54D4',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
+    backgroundColor: '#B052F7',
+    paddingVertical: 20,
+    alignItems: 'center',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#FFFFFF',
     textAlign: 'center',
   },
   infoCard: {
-    backgroundColor: '#FCE5CA',
+    backgroundColor: 'white',
     borderRadius: 16,
-    padding: 12,
-    marginBottom: 16,
+    padding: 15,
+    margin: 16,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   infoRow: {
     flexDirection: 'row',
@@ -498,83 +571,117 @@ const styles = StyleSheet.create({
   },
   infoItem: {
     alignItems: 'center',
+    padding: 10,
   },
   infoLabel: {
     fontSize: 12,
-    color: '#5B54D4',
-    fontWeight: '600',
+    color: '#666',
+    marginTop: 4,
   },
   infoValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#5B54D4',
+    color: '#333',
   },
   contentContainer: {
     flex: 1,
     alignItems: 'center',
     paddingVertical: 16,
+    paddingHorizontal: 16,
+  },
+  logoContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(176, 82, 247, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
   },
   welcomeTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#5B54D4',
+    color: '#333',
     textAlign: 'center',
     marginBottom: 24,
   },
   instructions: {
     fontSize: 16,
-    color: '#333333',
+    color: '#555',
     textAlign: 'center',
     marginBottom: 40,
-    paddingHorizontal: 20,
     lineHeight: 24,
   },
   startButton: {
-    backgroundColor: '#5B54D4',
-    paddingVertical: 16,
-    paddingHorizontal: 40,
+    width: '80%',
+    height: 56,
     borderRadius: 12,
-    elevation: 3,
+    backgroundColor: '#B052F7',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
   startButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
   },
+  buttonIcon: {
+    marginLeft: 8,
+  },
   wordPromptContainer: {
     alignItems: 'center',
     marginBottom: 24,
+    width: '100%',
   },
   wordPrompt: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#5B54D4',
-    marginBottom: 8,
+    color: '#B052F7',
+    marginBottom: 16,
+  },
+  wordCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    minWidth: '80%',
+    alignItems: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
   },
   word: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#333333',
+    color: '#333',
   },
   hiddenWordContainer: {
-    // backgroundColor: '#F0F0F0',
-    // borderRadius: 12,
-    // padding: 16,
-    // marginTop: 8,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 16,
+    padding: 20,
+    minWidth: '80%',
+    alignItems: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    flexDirection: 'row',
   },
   hiddenWordText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#666666',
-    letterSpacing: 4,
+    fontSize: 18,
+    color: '#666',
+    marginLeft: 8,
   },
   inputContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#FCE5CA',
+    backgroundColor: 'white',
     borderRadius: 16,
     padding: 16,
     width: '90%',
@@ -583,10 +690,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
     position: 'relative',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   input: {
     fontSize: 24,
-    color: '#333333',
+    color: '#333',
     letterSpacing: 2,
     fontWeight: '500',
     textAlign: 'center',
@@ -598,44 +710,45 @@ const styles = StyleSheet.create({
     marginTop: -18,
     width: 36,
     height: 36,
-    backgroundColor: '#5B54D4',
+    backgroundColor: '#B052F7',
     borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  backspaceText: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
+    elevation: 3,
   },
   sectionLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#5B54D4',
+    color: '#666',
     alignSelf: 'flex-start',
     marginLeft: 20,
-    marginBottom: 4,
+    marginBottom: 8,
   },
   alphabetBank: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    backgroundColor: '#FCE5CA',
+    backgroundColor: 'white',
     borderRadius: 16,
     padding: 16,
     width: '90%',
     minHeight: 120,
     marginVertical: 8,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   letterButton: {
-    backgroundColor: '#5B54D4',
+    backgroundColor: '#B052F7',
     width: 44,
     height: 44,
     borderRadius: 12,
     margin: 6,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 2,
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
@@ -653,25 +766,34 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   primaryButton: {
-    backgroundColor: '#5B54D4',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
     flex: 1,
+    height: 56,
     marginLeft: 8,
-    elevation: 3,
+    borderRadius: 12,
+    backgroundColor: '#B052F7',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
   secondaryButton: {
-    backgroundColor: '#E8E8E8',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
     flex: 1,
+    backgroundColor: 'white',
+    height: 56,
+    borderRadius: 12,
     marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   primaryButtonText: {
     color: 'white',
@@ -679,12 +801,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   secondaryButtonText: {
-    color: '#5B54D4',
+    color: '#B052F7',
     fontSize: 18,
     fontWeight: 'bold',
   },
+  secondaryButtonIcon: {
+    marginLeft: 8,
+  },
   disabledButton: {
-    backgroundColor: '#A8A6E5',
+    backgroundColor: '#D0D0D0',
+    opacity: 0.7,
   },
   feedbackContainer: {
     marginTop: 24,
@@ -692,42 +818,57 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 12,
     width: '90%',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
   },
   successFeedback: {
-    backgroundColor: '#E0F7E0',
-    borderColor: '#71C771',
-    borderWidth: 1,
+    backgroundColor: '#E8F5E9',
+    borderLeftWidth: 4,
+    borderLeftColor: '#4CAF50',
   },
   failureFeedback: {
-    backgroundColor: '#FFE8E8',
-    borderColor: '#FF8585',
-    borderWidth: 1,
+    backgroundColor: '#FFEBEE',
+    borderLeftWidth: 4,
+    borderLeftColor: '#F44336',
   },
   neutralFeedback: {
-    backgroundColor: '#F0F0F0',
-    borderColor: '#BBBBBB',
-    borderWidth: 1,
+    backgroundColor: '#F5F5F5',
+    borderLeftWidth: 4,
+    borderLeftColor: '#9E9E9E',
   },
   feedbackText: {
     fontSize: 16,
     fontWeight: '600',
-    textAlign: 'center',
+    textAlign: 'left',
+    color: '#333',
+  },
+  completedIconContainer: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: 'rgba(176, 82, 247, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
   },
   completedTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#5B54D4',
+    color: '#333',
     marginBottom: 24,
   },
   completedScore: {
     fontSize: 22,
     fontWeight: '600',
-    color: '#333333',
+    color: '#333',
     marginBottom: 12,
   },
   completedRound: {
     fontSize: 18,
-    color: '#333333',
+    color: '#666',
     marginBottom: 40,
   },
 });

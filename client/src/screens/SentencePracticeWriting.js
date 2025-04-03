@@ -10,7 +10,7 @@ import {
   Dimensions
 } from 'react-native';
 import aiApi from "../../api/aiApi";
-
+import serverApi from "../../api/serverApi";
 const { width } = Dimensions.get('window');
 
 const removePunctuation = (sentence) => {
@@ -242,6 +242,17 @@ const SentencePuzzleGame = () => {
     
     if (nextIndex >= 10) {
       // Round completed
+      // Calculate stats for progress tracking
+    const correctSentences = Math.floor(score / 4); // Adjust based on your scoring logic
+    const gameStats = {
+      totalSentences: 10,
+      correctSentences: correctSentences,
+      score: score
+    };
+    
+    // Update progress
+    updateProgress(gameStats);
+    
       Alert.alert(
         "Round Completed!", 
         `You've completed round ${round} with a score of ${score}.\n\nWould you like to play another round?`,
@@ -321,6 +332,21 @@ const SentencePuzzleGame = () => {
       if (sentenceTimer.current) clearInterval(sentenceTimer.current);
     };
   }, []);
+
+  // updateProgress function
+  const updateProgress = async (gameStats) => {
+    try {
+      const response = await serverApi.post('/api/progress/writing/sentencePractice', {
+        totalSentences: gameStats.totalSentences,
+        correctSentences: gameStats.correctSentences,
+        score: gameStats.score
+      });
+      
+      console.log('Progress updated:', response.data);
+    } catch (error) {
+      console.error('Error updating progress:', error);
+    }
+  };
 
   // Render functions for different game states
   const renderInitScreen = () => (
