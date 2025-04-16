@@ -21,6 +21,7 @@ const Profile = () => {
   const [keyboardHeight, setKeyboardHeight] = useState(0); // To adjust form height dynamically
   const [isAnimating, setIsAnimating] = useState(false); // Prevent interaction during animation
   const [isLoggingOut, setIsLoggingOut] = useState(false); // For logout loading state
+  const [inform, setInform] = useState(false);
 
   // Show form with animation
   const showForm = (type) => {
@@ -95,7 +96,7 @@ const Profile = () => {
             <Icon name="user-circle" size={80} color="#B052F7" />
           </View>
           <Text style={styles.userName}>{`${user.FName} ${user.LName}`}</Text>
-          <Text style={styles.userRole}>{user.Role || "student"}</Text>
+          <Text style={styles.userRole}>{user.role || "student"}</Text>
         </View>
 
         {/* Menu Items */}
@@ -113,11 +114,41 @@ const Profile = () => {
           </TouchableOpacity>
 
           {/* Information */}
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={styles.menuItem} onPress={() => setInform(!inform)}>
             <Icon name="info-circle" size={24} color="#B052F7" />
             <Text style={styles.menuText}>Information</Text>
             <Icon name="chevron-right" size={18} color="#B052F7" style={styles.chevron} />
           </TouchableOpacity>
+
+          {inform && (
+          <View style={styles.infoBox}>
+            <View style={styles.infoRow}>
+              <Icon name="envelope" size={18} color="#B052F7" style={styles.infoIcon} />
+              <Text style={styles.infoLabel}>Email:</Text>
+              <Text style={styles.infoValue}>{user.Email}</Text>
+            </View>
+            {user.userLevel ? (
+            <View style={styles.infoRow}>
+              <Icon name="graduation-cap" size={18} color="#B052F7" style={styles.infoIcon} />
+              <Text style={styles.infoLabel}>Level:</Text>
+              <Text style={styles.infoValue}>{user.userLevel || 'N/A'}</Text>
+            </View>
+          ): null}
+
+            <View style={styles.infoRow}>
+              <Icon name="users" size={18} color="#B052F7" style={styles.infoIcon} />
+              <Text style={styles.infoLabel}>Followers:</Text>
+              <Text style={styles.infoValue}>{user.Followers?.length || 0}</Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Icon name="user-plus" size={18} color="#B052F7" style={styles.infoIcon} />
+              <Text style={styles.infoLabel}>Following:</Text>
+              <Text style={styles.infoValue}>{user.Following?.length || 0}</Text>
+            </View>
+          </View>
+        )}
+
 
           {/* Logout */}
           <TouchableOpacity
@@ -213,6 +244,40 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
     padding: 10,
   },
+ infoBox: {
+  backgroundColor: '#F5F5F5',
+  padding: 16,
+  borderRadius: 12,
+  marginHorizontal: 20,
+  marginTop: -10,
+  marginBottom: 20,
+  elevation: 1,
+},
+
+infoRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginVertical: 6,
+},
+
+infoIcon: {
+  marginRight: 8,
+},
+
+infoLabel: {
+  fontWeight: 'bold',
+  color: '#555',
+  fontSize: 14,
+  marginRight: 6,
+},
+
+infoValue: {
+  color: '#333',
+  fontSize: 16,
+  flexShrink: 1,
+},
+
+
 });
 
 export default Profile;

@@ -117,8 +117,8 @@ const IndexScreen = ({ navigation }) => {
       {/* Bottom Navigation */}
       <Animated.View style={[styles.bottomNav, { opacity: fadeAnim }]}>
         {[
-          { name: 'Home', icon: 'home' },
-          { name: 'Notifications', icon: 'bell' },
+          { name: 'FollowList', icon: 'user-plus', type: 'user' },
+          { name: 'Messages', icon: 'envelope' },
           { name: 'Progress', icon: 'graduation-cap' },
           { name: 'Profile', icon: 'user' },
         ].map((item, index) => (

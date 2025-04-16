@@ -2,41 +2,58 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const User = require('../models/User'); // Replace with the correct path to your User model
 const bcrypt = require('bcrypt');
+const Teacher = require('../models/Teacher');
 
 // Configure Passport Local Strategy
 passport.use(
   new LocalStrategy(
-    { usernameField: 'email', passwordField: 'password' }, // Match frontend field names
-    async (email, password, done) => {
+    {
+      usernameField: 'email',
+      passwordField: 'password',
+      passReqToCallback: true, // 👈 needed to access req.body.role
+    },
+    async (req, email, password, done) => {
+      const { role } = req.body;
+
       try {
-        const user = await User.findOne({ Email: email }); // Search for the user by email
-        if (!user) {
-          return done(null, false, { message: 'Incorrect email.' }); // User not found
-        }
-        const isMatch = await bcrypt.compare(password, user.Password); // Compare hashed passwords
-        if (!isMatch) {
-          return done(null, false, { message: 'Incorrect password.' }); // Password mismatch
-        }
-        return done(null, user); // Successful authentication
+        const Model = role === 'teacher' ? require('../models/Teacher') : require('../models/User');
+        const user = await Model.findOne({ Email: email });
+
+        if (!user) return done(null, false, { message: 'Incorrect email.' });
+
+        const isMatch = await bcrypt.compare(password, user.Password);
+        if (!isMatch) return done(null, false, { message: 'Incorrect password.' });
+
+        user.role = role; // 👈 manually attach role for session usage
+        return done(null, user);
       } catch (err) {
-        return done(err); // Handle errors
+        return done(err);
       }
     }
   )
 );
 
+
+
 // Serialize and Deserialize User
-passport.serializeUser((user, cb) => {
-  cb(null, user.id); // Serialize the user ID into the session
+passport.serializeUser((user, done) => {
+  done(null, { id: user._id, role: user.role }); // ✅ store both
 });
 
-passport.deserializeUser(async (id, cb) => {
+
+passport.deserializeUser(async ({ id, role }, done) => {
   try {
-    const user = await User.findById(id); // Find the user by ID during deserialization
-    cb(null, user);
+    const Model = role === 'teacher' ? require('../models/Teacher') : require('../models/User');
+    const user = await Model.findById(id);
+    return done(null, user || false);
   } catch (err) {
-    cb(err);
+    return done(err);
   }
 });
+
+
+
+
+
 
 module.exports = passport;

@@ -8,7 +8,7 @@ const { generateFourDigitCode, sendEmail } = require('../config/nodemailer');
 const router = express.Router();
 
 const corsOptions = {
-  origin: 'http://10.100.55.3:8081', // Allow requests from your Expo app's URL
+  origin: ['http://10.100.55.3:8081','http://localhost:8081'], // Allow requests from your Expo app's URL
   credentials: true, // Enable credentials (cookies)
 };
 

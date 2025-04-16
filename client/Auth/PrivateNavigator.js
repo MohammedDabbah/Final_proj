@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import IndexScreen from "../src/screens/IndexScreen";
+import TeacherScreen from "../src/screens/TeacherScreen"; // 👈 Import TeacherScreen
 import ProfileStudentScreen from "../src/screens/Profile";
 import DictionaryScreen from "../src/screens/DictionaryScreen";
 import QuizScreen from "../src/screens/QuizScreen";
@@ -16,23 +17,31 @@ import SentencePracticeWriting from '../src/screens/SentencePracticeWriting';
 import WordsPracticeWriting from '../src/screens/WordsPracticeWriting';
 import ImproveReadingScreen from '../src/screens/ImproveReadingScreen';
 import ProgressScreen from '../src/screens/ProgressScreen';
+import FollowListScreen from "../src/screens/FollowListScreen";
+import StudentListScreen from "../src/screens/StudentListScreen";
+import StudentProgressScreen from "../src/screens/StudentProgressScreen";
+import MessageListScreen from "../src/screens/MessageListScreen";
+import MessageScreen from "../src/screens/MessageScreen";
 
 
 const Stack = createStackNavigator();
 
 const PrivateNavigator = () => {
-  const { user } = useContext(AuthContext); // ✅ Get user data
+  const { user } = useContext(AuthContext);
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: true }}>
-      {/* ✅ If user is NEW, send them to LevelSelection first */}
-      {user?.evaluate === false ? (
+      {/* ✅ Conditional start screen based on role */}
+      {console.log(user.role)}
+      {user?.role === 'teacher' ? (
+        <Stack.Screen name="Home" component={TeacherScreen} />
+      ) : user?.evaluate === false ? (
         <Stack.Screen name="LevelSelection" component={LevelSelectionScreen} />
       ) : (
         <Stack.Screen name="Home" component={IndexScreen} />
       )}
 
-      {/* ✅ Add other screens */}
+      {/* ✅ Common student/user screens */}
       <Stack.Screen name="Profile" component={ProfileStudentScreen} />
       <Stack.Screen name="Dict" component={DictionaryScreen} />
       <Stack.Screen name="Quiz" component={QuizScreen} />
@@ -46,10 +55,13 @@ const PrivateNavigator = () => {
       <Stack.Screen name="WordsPracticeWriting" component={WordsPracticeWriting} />
       <Stack.Screen name="ImproveReadingScreen" component={ImproveReadingScreen} />
       <Stack.Screen name="Progress" component={ProgressScreen} options={{ title: 'My Progress' }} />
+      <Stack.Screen name="FollowList" component={FollowListScreen}/>
+      <Stack.Screen name="PerformanceScreen" component={StudentListScreen} />
+      <Stack.Screen name="StudentProgressScreen" component={StudentProgressScreen} />
+      <Stack.Screen name="Messages" component={MessageListScreen} />
+      <Stack.Screen name="MessageScreen" component={MessageScreen} />
 
-
-
-
+      {/* ✅ Add future teacher-specific screens here too if needed */}
     </Stack.Navigator>
   );
 };

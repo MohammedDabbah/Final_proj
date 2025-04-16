@@ -192,4 +192,35 @@ async function checkAndUpdateUserLevel(userId) {
   }
 }
 
+// routes/progressRoutes.js
+
+router.get('/:studentId', isAuthenticated, async (req, res) => {
+  try {
+    const { studentId } = req.params;
+
+    // Optional: Only allow teachers to access this
+    if (req.user.role !== 'teacher') {
+      return res.status(403).json({ message: 'Only teachers can view student progress' });
+    }
+
+    const student = await User.findById(studentId);
+    if (!student) return res.status(404).json({ message: 'Student not found' });
+
+    let progress = await Progress.findOne({ userId: studentId });
+    if (!progress) {
+      progress = new Progress({ userId: studentId });
+      await progress.save();
+    }
+
+    res.json({
+      userLevel: student.userLevel,
+      progress
+    });
+  } catch (err) {
+    console.error('Error fetching student progress:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
 module.exports = router;

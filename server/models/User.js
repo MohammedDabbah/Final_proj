@@ -6,7 +6,8 @@ const UserSchema = new mongoose.Schema({
   FName: { type: String, required: true },
   LName: { type: String, required: true },
   Email: { type: String, required: true, unique: true },
-  Password: { type: String, required: true },
+  Password: { type: String},
+  role: { type: String, default: 'teacher' }, // ✅ added
   userLevel: { 
     type: String, 
     required: true, 
@@ -15,7 +16,9 @@ const UserSchema = new mongoose.Schema({
   },
   evaluate: {type: Boolean, required: true, default: false},
   unknownWords: [{ word: String, definition: String }],
-  Followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // 👈 OPTIONAL
+  Followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Teacher' }], // 👈 OPTIONAL
+  Following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Teacher' }],
+
 });
 
 // Hash Password Before Saving

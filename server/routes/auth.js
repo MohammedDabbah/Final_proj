@@ -4,14 +4,19 @@ const cors = require('cors');
 const User = require('../models/User');
 const Teacher = require('../models/Teacher');
 const { generateFourDigitCode, sendEmail } = require('../config/nodemailer');
+const { OAuth2Client } = require("google-auth-library");
 
 const corsOptions = {
-  origin: 'http://10.100.55.3:8081', // Allow requests from your Expo app's URL
+  origin: ['http://10.100.55.3:8081','http://localhost:8081'], // Allow requests from your Expo app's URL
   credentials: true, // Enable credentials (cookies)
 };
 
 const router = express.Router();
 const verificationCodes = {}; // Temporary in-memory storage
+
+const client = new OAuth2Client('460063962262-qk13u51b0gip8jlilrc2hpb64bte4gli.apps.googleusercontent.com');
+
+
 
 router.use(cors(corsOptions));
 // router.use(cors);
@@ -66,6 +71,7 @@ router.post('/register', async (req, res, next) => {
       LName,
       Email,
       Password, // Store the hashed password
+      role, // ✅ this is stored in DB now
     });
 
     await newUser.save();
@@ -135,7 +141,61 @@ router.get('/authenticated', (req, res) => {
 });
 
 
+
+
+
+router.post("/google-login", async (req, res) => {
+  console.log(req.body);
+  const { idToken, role = "user" } = req.body;
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: '460063962262-qk13u51b0gip8jlilrc2hpb64bte4gli.apps.googleusercontent.com',
+    });
+
+    const payload = ticket.getPayload();
+    const {
+      email,
+      name,
+      picture,
+      sub: googleId,
+      given_name: firstName,
+      family_name: lastName,
+    } = payload;
+
+    const Model = role === "teacher" ? Teacher : User;
+
+    let user = await Model.findOne({ Email: email });
+
+    if (!user) {
+      user = await Model.create({
+        FName: firstName,
+        LName: lastName,
+        Email: email,
+        role,
+      });
+    }
+
+    await user.save();
+
+    req.login(user, (err) => {
+      if (err) {
+        console.error("Login error:", err);
+        return res.status(500).json({ message: "Session login failed" });
+      }
+
+      return res.status(200).json({ message: "Google login successful", user });
+    });
+  } catch (err) {
+    console.error("Google login failed:", err);
+    return res.status(401).json({ message: "Invalid Google token", error: err });
+  }
+});
+
 module.exports = router;
+
+
 
 // Profile Route
 // router.get('/profile', (req, res) => {

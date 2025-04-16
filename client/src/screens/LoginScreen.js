@@ -1,16 +1,26 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { 
   View, 
   Text, 
   TextInput, 
   StyleSheet, 
   TouchableOpacity, 
-  ActivityIndicator 
+  ActivityIndicator,
+  Platform 
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import serverApi from "../../api/serverApi";
 import { AuthContext } from "../../Auth/AuthContext";
 import { CommonActions, useNavigation } from "@react-navigation/native";
+
+import * as Google from "expo-auth-session/providers/google";
+import * as WebBrowser from "expo-web-browser";
+import {makeRedirectUri} from 'expo-auth-session';
+import {WEB_CLIENT_ID, ANDRIOD_CLIENT_ID, IOS_CLIENT_ID} from '@env';
+
+
+
+WebBrowser.maybeCompleteAuthSession();
 
 const LoginScreen = () => {
   const { setUser } = useContext(AuthContext); // Removed 'user' as it's not needed here
@@ -19,6 +29,53 @@ const LoginScreen = () => {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user"); // ✅ Role state
   const [loading, setLoading] = useState(false);
+
+
+   // Google Auth setup (no condition on platform)
+   const [request, response, promptAsync] = Google.useAuthRequest({
+    iosClientId: IOS_CLIENT_ID,
+    androidClientId: ANDRIOD_CLIENT_ID,
+    webClientId: WEB_CLIENT_ID,
+    expoClientId: WEB_CLIENT_ID,
+    scopes: ["openid", "profile", "email"],
+    responseType: "id_token", // ✅ REQUIRED to get id_token
+    redirectUri: makeRedirectUri({ useProxy: true }), // ✅ FIXED
+  });
+
+  const processGoogleLoginResponse = async () => {
+    const idToken = response?.params?.id_token;
+  
+    if (idToken) {
+      handleGoogleLogin(idToken);
+    } else if (response?.type === "error") {
+      alert("Google login failed. Please try again.");
+    } else {
+      console.log("Google login canceled or dismissed.");
+    }
+  };
+ 
+
+  useEffect(() => {
+    if (!response) return;
+  
+    processGoogleLoginResponse(); // your logic
+  }, [response]);
+  
+  
+  
+
+  const handleGoogleLogin = async (idToken) => {
+    try {
+      const res = await serverApi.post("/auth/google-login", {idToken,role}, {
+        withCredentials: true,
+      });
+      setUser(res.data.user);
+      alert("Login with Google successful!");
+    } catch (err) {
+      console.error("Google login error:", err);
+      alert("Google login failed.");
+    }
+  };
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -99,10 +156,22 @@ const LoginScreen = () => {
           <Text style={styles.buttonText}>Sign In</Text>
         )}
       </TouchableOpacity>
+      <TouchableOpacity onPress={() =>{
+        if (request) {
+          if (Platform.OS === "web") {
+                promptAsync(); // no proxy
+              } else {
+                promptAsync({ useProxy: true }); // use proxy for native
+              }
+        } else {
+          alert("Google login is not ready. Try again.");
+        }
+      }}>
       <Text style={styles.socialText}>Sign in with</Text>
       <View style={styles.socialIcons}>
         <Icon name="google" size={30} color="#DB4437" style={styles.icon} />
       </View>
+      </TouchableOpacity>
     </View>
   );
 };
