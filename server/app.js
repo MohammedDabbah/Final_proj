@@ -7,6 +7,9 @@ const connectDB = require('./config/database');
 const routes = require('./routes/index');
 const progressRoutes = require('./routes/progressRoutes');
 const followRoutes = require('./routes/followRoutes');
+const activityRoutes = require('./routes/activityRoutes');
+const studyGroupRoutes = require('./routes/StudyGrouproutes');
+const submissionRoutes = require('./routes/ActivitySubmissionroutes');
 const cors = require('cors');
 
 const app = express();
@@ -38,7 +41,9 @@ app.use(passport.session());
 app.use('/', routes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/follow', followRoutes);
-
+app.use('/api/activities', activityRoutes);
+app.use('/api/studygroups', studyGroupRoutes); 
+app.use('/api/submissions', submissionRoutes); 
 const messageRoutes = require('./routes/messageRoutes');
 app.use('/api/messages', messageRoutes);
 

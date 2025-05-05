@@ -14,11 +14,11 @@ const teacherCardData = [
   //   screen: 'MyStudentsScreen',
   // },
   {
-    title: 'Create Activity',
+    title: 'Activity Manager',
     subtitle: 'Design quizzes and writing tasks',
     icon: 'plus-circle',
     bgColor: '#FF6B81',
-    screen: 'CreateActivityScreen',
+    screen: 'ActivityManagerScreen',
   },
   {
     title: 'Evaluate Tasks',

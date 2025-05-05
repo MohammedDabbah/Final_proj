@@ -6,13 +6,15 @@ import {
   StyleSheet, 
   Alert,
   Modal,
-  Animated 
+  Animated,
+  SafeAreaView
 } from 'react-native';
 import * as Speech from 'expo-speech';
 import { Audio } from 'expo-av';
 import aiApi from "../../api/aiApi";
 import { AI_API_KEY } from '../../api/config';
 import serverApi from "../../api/serverApi";
+import Icon from 'react-native-vector-icons/Feather';
 
 const ImproveReadingScreen = () => {
   // State Management
@@ -28,6 +30,12 @@ const ImproveReadingScreen = () => {
   const [progressAnimation] = useState(new Animated.Value(0));
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [skippedItems, setSkippedItems] = useState(0);
+
+  // All existing functions remain the same...
+  // fetchWords, fetchSentences, playCurrentItemAudio, startRecording, 
+  // stopRecording, transcribeAudio, checkAccuracy, skipCurrentItem, 
+  // moveToNextItem, startWordMode, startSentenceMode, resetGame, 
+  // updateWordReadingProgress, updateSentenceReadingProgress
 
   // Fetch Words with Strict GPT-3.5 Generation
   const fetchWords = async () => {
@@ -282,22 +290,22 @@ const ImproveReadingScreen = () => {
   // Reset Game
   const resetGame = () => {
     // If the game was completed, update the progress
-  if (gameCompleted) {
-    const totalItems = currentIndex + 1;
-    const correctItems = totalItems - skippedItems;
-    
-    if (mode === 'word') {
-      updateWordReadingProgress({
-        totalWords: totalItems,
-        correctPronunciations: correctItems
-      });
-    } else {
-      updateSentenceReadingProgress({
-        totalSentences: totalItems,
-        correctPronunciations: correctItems
-      });
+    if (gameCompleted) {
+      const totalItems = currentIndex + 1;
+      const correctItems = totalItems - skippedItems;
+      
+      if (mode === 'word') {
+        updateWordReadingProgress({
+          totalWords: totalItems,
+          correctPronunciations: correctItems
+        });
+      } else {
+        updateSentenceReadingProgress({
+          totalSentences: totalItems,
+          correctPronunciations: correctItems
+        });
+      }
     }
-  }
     // Stop any ongoing speech
     Speech.stop();
     
@@ -310,25 +318,7 @@ const ImproveReadingScreen = () => {
     setSkippedItems(0);  // Reset skipped items counter
   };
 
-  // Render Mode Selection
-  const renderModeSelection = () => (
-    <View style={styles.modeSelectionContainer}>
-      <Text style={styles.title}>Improve Reading</Text>
-      <TouchableOpacity 
-        style={styles.modeButton} 
-        onPress={startWordMode}
-      >
-        <Text style={styles.buttonText}>Practice Words</Text>
-      </TouchableOpacity>
-      <TouchableOpacity 
-        style={styles.modeButton} 
-        onPress={startSentenceMode}
-      >
-        <Text style={styles.buttonText}>Practice Sentences</Text>
-      </TouchableOpacity>
-    </View>
-  );
-  //update progress for both word and sentence modes
+  // Update progress for both word and sentence modes
   const updateWordReadingProgress = async (gameStats) => {
     try {
       const response = await serverApi.post('/api/progress/reading/wordReading', {
@@ -355,12 +345,101 @@ const ImproveReadingScreen = () => {
     }
   };
 
-  // Render Practice Screen
+  // New render function for mode selection with card design
+  const renderModeSelection = () => (
+    <>
+      {/* Decorative background elements */}
+      <View style={styles.decorativeCirclesContainer}>
+        <View style={styles.decorativeCircle1} />
+        <View style={styles.decorativeCircle2} />
+        <View style={styles.decorativeCircle3} />
+      </View>
+      
+      {/* Main content card */}
+      <View style={styles.mainCard}>
+        <View style={styles.iconCircle}>
+          <Icon name="book-open" size={24} color="white" />
+        </View>
+        <Text style={styles.mainCardTitle}>Improving Your Reading</Text>
+      </View>
+      
+      {/* Description section */}
+      <View style={styles.descriptionContainer}>
+        <Text style={styles.descriptionTitle}>Description</Text>
+        <Text style={styles.descriptionText}>
+          Reading is a fundamental skill that opens doors to knowledge and imagination.
+          Regular practice helps develop pronunciation, comprehension, and vocabulary.
+          Through these exercises, you can enhance your reading fluency and confidence.
+          This tool provides structured practice for both word pronunciation and
+          sentence reading.
+        </Text>
+      </View>
+      
+      {/* Bottom action cards */}
+      <View style={styles.bottomSection}>
+        <TouchableOpacity 
+          style={styles.actionCard}
+          onPress={startWordMode}
+        >
+          <View style={styles.iconContainer}>
+            <Icon name="type" size={24} color="black" />
+          </View>
+          <Text style={styles.actionCardText}>Words Practice</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.actionCard} 
+          onPress={startSentenceMode}
+        >
+          <View style={styles.iconContainer}>
+            <Icon name="align-left" size={24} color="black" />
+          </View>
+          <Text style={styles.actionCardText}>Sentences Practice</Text>
+        </TouchableOpacity>
+      </View>
+    </>
+  );
+
+  // Render Practice Screen (keeps existing functionality)
   const renderPracticeScreen = () => {
     const currentItem = mode === 'word' ? words[currentIndex] : sentences[currentIndex];
 
     return (
       <View style={styles.practiceContainer}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Reading Practice</Text>
+          <TouchableOpacity 
+            style={styles.backButton} 
+            onPress={resetGame}
+          >
+            <Icon name="arrow-left" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
+        
+        {/* Info Card */}
+        <View style={styles.infoCard}>
+          <View style={styles.infoRow}>
+            <View style={styles.infoItem}>
+              <Icon name="book" size={16} color="#B052F7" />
+              <Text style={styles.infoLabel}>Mode</Text>
+              <Text style={styles.infoValue}>{mode === 'word' ? 'Words' : 'Sentences'}</Text>
+            </View>
+            
+            <View style={styles.infoItem}>
+              <Icon name="flag" size={16} color="#B052F7" />
+              <Text style={styles.infoLabel}>Progress</Text>
+              <Text style={styles.infoValue}>{currentIndex + 1}/10</Text>
+            </View>
+            
+            <View style={styles.infoItem}>
+              <Icon name="skip-forward" size={16} color="#B052F7" />
+              <Text style={styles.infoLabel}>Skipped</Text>
+              <Text style={styles.infoValue}>{skippedItems}</Text>
+            </View>
+          </View>
+        </View>
+
         {/* Progress Bar */}
         <View style={styles.progressContainer}>
           <Animated.View 
@@ -375,10 +454,6 @@ const ImproveReadingScreen = () => {
             ]} 
           />
         </View>
-
-        <Text style={styles.modeTitle}>
-          {mode === 'word' ? 'Word Practice' : 'Sentence Practice'}
-        </Text>
         
         {/* Audio Playback Button */}
         <TouchableOpacity 
@@ -389,22 +464,40 @@ const ImproveReadingScreen = () => {
           <Text style={styles.audioButtonText}>
             {isAudioPlaying ? 'Playing...' : 'Listen to Item'}
           </Text>
+          <Icon 
+            name={isAudioPlaying ? "volume-2" : "play"} 
+            size={18} 
+            color="white" 
+            style={styles.buttonIcon}
+          />
         </TouchableOpacity>
 
-        <Text style={styles.currentItem}>{currentItem}</Text>
+        {/* Current Item */}
+        <View style={styles.currentItemContainer}>
+          <Text style={styles.currentItem}>{currentItem}</Text>
+        </View>
         
+        {/* Transcription Container */}
         {transcription ? (
           <View style={styles.transcriptionContainer}>
-            <Text style={styles.transcriptionText}>You said: {transcription}</Text>
+            <Text style={styles.transcriptionText}>
+              <Icon name="message-circle" size={16} color="#666" style={{marginRight: 6}} />
+              You said: {transcription}
+            </Text>
             <Text style={[
               styles.accuracyText, 
-              { color: isCorrect ? 'green' : 'red' }
+              { color: isCorrect ? '#4CAF50' : '#f44336' }
             ]}>
-              {isCorrect !== null && (isCorrect ? '✓ Correct' : '✗ Incorrect')}
+              {isCorrect !== null && (
+                isCorrect 
+                  ? <><Icon name="check-circle" size={18} color="#4CAF50" /> Correct</> 
+                  : <><Icon name="x-circle" size={18} color="#f44336" /> Incorrect</>
+              )}
             </Text>
           </View>
         ) : null}
 
+        {/* Action Buttons */}
         <View style={styles.actionButtonsContainer}>
           {!isRecording ? (
             <TouchableOpacity 
@@ -412,6 +505,7 @@ const ImproveReadingScreen = () => {
               onPress={startRecording}
             >
               <Text style={styles.buttonText}>Start Recording</Text>
+              <Icon name="mic" size={20} color="white" style={styles.buttonIcon} />
             </TouchableOpacity>
           ) : (
             <TouchableOpacity 
@@ -419,6 +513,7 @@ const ImproveReadingScreen = () => {
               onPress={stopRecording}
             >
               <Text style={styles.buttonText}>Stop Recording</Text>
+              <Icon name="square" size={20} color="white" style={styles.buttonIcon} />
             </TouchableOpacity>
           )}
 
@@ -428,149 +523,353 @@ const ImproveReadingScreen = () => {
             disabled={isRecording}
           >
             <Text style={styles.buttonText}>Skip</Text>
+            <Icon name="skip-forward" size={20} color="white" style={styles.buttonIcon} />
           </TouchableOpacity>
         </View>
-
-        <TouchableOpacity 
-          style={styles.resetButton} 
-          onPress={resetGame}
-        >
-          <Text style={styles.buttonText}>Back to Modes</Text>
-        </TouchableOpacity>
       </View>
     );
   };
 
   // Render Game Completed Modal
-const renderGameCompletedModal = () => (
-  <Modal
-    visible={gameCompleted}
-    transparent={true}
-    animationType="slide"
-  >
-    <View style={styles.modalContainer}>
-      <View style={styles.modalContent}>
-        <Text style={styles.modalTitle}>Congratulations!</Text>
-        <Text style={styles.modalText}>
-          You've completed the {mode} practice!
-        </Text>
-        <Text style={styles.modalSubtext}>
-          Skipped Items: {skippedItems}
-        </Text>
-        <TouchableOpacity 
-          style={styles.modalButton} 
-          onPress={() => {
-            // Add progress tracking before resetting
-            const totalItems = 10; // Assuming 10 items total
-            const correctItems = totalItems - skippedItems;
-            
-            if (mode === 'word') {
-              updateWordReadingProgress({
-                totalWords: totalItems,
-                correctPronunciations: correctItems
-              });
-            } else {
-              updateSentenceReadingProgress({
-                totalSentences: totalItems,
-                correctPronunciations: correctItems
-              });
-            }
-            
-            resetGame();
-          }}
-        >
-          <Text style={styles.buttonText}>Play Again</Text>
-        </TouchableOpacity>
+  const renderGameCompletedModal = () => (
+    <Modal
+      visible={gameCompleted}
+      transparent={true}
+      animationType="slide"
+    >
+      <View style={styles.modalContainer}>
+        <View style={styles.modalContent}>
+          <View style={styles.completedIconContainer}>
+            <Icon name="award" size={50} color="#B052F7" />
+          </View>
+          <Text style={styles.modalTitle}>Congratulations!</Text>
+          <Text style={styles.modalText}>
+            You've completed the {mode} practice!
+          </Text>
+          <Text style={styles.modalSubtext}>
+            <Icon name="skip-forward" size={16} color="#666" style={{marginRight: 8}} />
+            Skipped Items: {skippedItems}
+          </Text>
+          <TouchableOpacity 
+            style={styles.modalButton} 
+            onPress={() => {
+              // Add progress tracking before resetting
+              const totalItems = 10; // Assuming 10 items total
+              const correctItems = totalItems - skippedItems;
+              
+              if (mode === 'word') {
+                updateWordReadingProgress({
+                  totalWords: totalItems,
+                  correctPronunciations: correctItems
+                });
+              } else {
+                updateSentenceReadingProgress({
+                  totalSentences: totalItems,
+                  correctPronunciations: correctItems
+                });
+              }
+              
+              resetGame();
+            }}
+          >
+            <Text style={styles.buttonText}>Play Again</Text>
+            <Icon name="refresh-cw" size={20} color="white" style={styles.buttonIcon} />
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  </Modal>
-);
+    </Modal>
+  );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {!mode ? renderModeSelection() : renderPracticeScreen()}
       {renderGameCompletedModal()}
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f8',
+  },
+  // Decorative elements (from ImprovingWritingScreen)
+  decorativeCirclesContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 200,
+    overflow: 'visible',
+    zIndex: 1,
+  },
+  decorativeCircle1: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#F8D568', // Yellow circle
+    opacity: 2,
+    zIndex: 1,
+  },
+  decorativeCircle2: {
+    position: 'absolute',
+    top: 30,
+    right: 100,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#5454CE', // Purple circle (changed to match our theme)
+    zIndex: 1,
+  },
+  decorativeCircle3: {
+    position: 'absolute',
+    top: 20,
+    right: 70,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#F29CB1', // Pink circle
+    opacity: 1,
+    zIndex: 3,
+  },
+  mainCard: {
+    marginTop: 80,
+    marginHorizontal: 20,
+    height: 160,
+    backgroundColor: '#5454CE', // Changed to our purple color
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#080707',
+    justifyContent: 'flex-end',
+    zIndex: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  iconCircle: {
+    position: 'absolute',
+    top: -20,
+    left: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#5454CE', // Changed to our purple color
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f0f0f0',
+    shadowColor: '#080707',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 5,
   },
-  modeSelectionContainer: {
-    width: '80%',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 24,
+  mainCardTitle: {
+    color: 'white',
+    fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 30,
-    color: '#333',
   },
-  modeButton: {
-    backgroundColor: '#5352ed',
-    padding: 15,
-    borderRadius: 10,
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: 20,
+  descriptionContainer: {
+    marginTop: 30,
+    marginHorizontal: 20,
   },
-  buttonText: {
-    color: 'white',
+  descriptionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
   },
-  practiceContainer: {
-    width: '90%',
+  descriptionText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#444',
+  },
+  bottomSection: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#5454CE', // Changed to our purple color
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 20,
+    paddingBottom: 30,
+  },
+  actionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 15,
+    marginBottom: 15,
+    height: 70,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  iconContainer: {
+    width: 60,
+    height: '100%',
+    backgroundColor: '#FFF0D9', // Light beige
+    borderTopLeftRadius: 15,
+    borderBottomLeftRadius: 15,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  progressContainer: {
+  actionCardText: {
+    marginLeft: 15,
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+  },
+  
+  // Practice screen styles (keep from previous design but adjust colors)
+  practiceContainer: {
     width: '100%',
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  header: {
+    backgroundColor: '#B052F7',
+    paddingVertical: 20,
+    alignItems: 'center',
+    width: '100%',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    position: 'relative',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    marginBottom: 16,
+  },
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    top: '50%',
+    transform: [{ translateY: -12 }],
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    textAlign: 'center',
+  },
+  infoCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 15,
+    width: '90%',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    marginBottom: 16,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  infoItem: {
+    alignItems: 'center',
+    padding: 10,
+  },
+  infoLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+  },
+  infoValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  progressContainer: {
+    width: '90%',
     height: 10,
     backgroundColor: '#e0e0e0',
     borderRadius: 5,
     marginBottom: 20,
+    overflow: 'hidden',
   },
   progressBar: {
     height: '100%',
-    backgroundColor: '#5352ed',
+    backgroundColor: '#B052F7',
     borderRadius: 5,
   },
-  modeTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
   audioButton: {
-    backgroundColor: '#5352ed',
-    padding: 10,
-    borderRadius: 10,
+    backgroundColor: '#B052F7',
+    padding: 12,
+    borderRadius: 12,
     marginBottom: 20,
     width: '80%',
+    height: 50,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
   },
   audioButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },
+  buttonIcon: {
+    marginLeft: 8,
+  },
+  currentItemContainer: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    width: '90%',
+    minHeight: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+  },
   currentItem: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
     textAlign: 'center',
+    color: '#333',
   },
   transcriptionContainer: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 16,
+    width: '90%',
     alignItems: 'center',
     marginBottom: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   transcriptionText: {
     fontSize: 16,
     marginBottom: 10,
+    color: '#555',
   },
   accuracyText: {
     fontSize: 18,
@@ -579,37 +878,58 @@ const styles = StyleSheet.create({
   actionButtonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '80%',
-    marginTop: 20,
+    width: '90%',
+    marginTop: 10,
   },
   recordButton: {
     backgroundColor: '#4CAF50',
-    padding: 10,
-    borderRadius: 10,
-    width: '45%',
+    padding: 15,
+    borderRadius: 12,
+    width: '48%',
+    height: 56,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
   stopRecordButton: {
     backgroundColor: '#f44336',
-    padding: 10,
-    borderRadius: 10,
-    width: '45%',
+    padding: 15,
+    borderRadius: 12,
+    width: '48%',
+    height: 56,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
   skipButton: {
     backgroundColor: '#ff6b6b',
-    padding: 10,
-    borderRadius: 10,
-    width: '45%',
+    padding: 15,
+    borderRadius: 12,
+    width: '48%',
+    height: 56,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
-  resetButton: {
-    backgroundColor: '#2196F3',
-    padding: 10,
-    borderRadius: 10,
-    width: '80%',
-    alignItems: 'center',
-    marginTop: 20,
+  buttonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   modalContainer: {
     flex: 1,
@@ -619,20 +939,36 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 10,
+    padding: 24,
+    borderRadius: 16,
     alignItems: 'center',
     width: '80%',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+  },
+  completedIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(176, 82, 247, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 10,
+    color: '#333',
   },
   modalText: {
     fontSize: 18,
     textAlign: 'center',
     marginBottom: 20,
+    color: '#555',
   },
   modalSubtext: {
     fontSize: 16,
@@ -640,12 +976,19 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   modalButton: {
-    backgroundColor: '#5352ed',
-    padding: 10,
-    borderRadius: 10,
+    backgroundColor: '#B052F7',
+    padding: 15,
+    borderRadius: 12,
     width: '100%',
+    height: 56,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
 });
-
 export default ImproveReadingScreen;
