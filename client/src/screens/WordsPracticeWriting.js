@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { 
   View, 
   Text, 
@@ -9,9 +9,9 @@ import {
   Alert,
 } from 'react-native';
 import aiApi from "../../api/aiApi";
-import axios from 'axios';
 import serverApi from "../../api/serverApi";
 import Icon from 'react-native-vector-icons/Feather'; // Assuming you already have this
+import { AuthContext } from '../../Auth/AuthContext';
 
 const WordPracticeGame = () => {
   // Game state
@@ -30,9 +30,11 @@ const WordPracticeGame = () => {
   const [countdownValue, setCountdownValue] = useState(3);
   const countdownTimerRef = useRef(null);
   const [progressUpdated, setProgressUpdated] = useState(false);
+  const { user } = useContext(AuthContext);
 
   // Fetch a batch of 10 words from OpenAI API
   const fetchWordBatch = async () => {
+    console.log(user.userLevel)
     setIsLoading(true);
     try {
       // Make the request with clear instructions for format
@@ -45,7 +47,7 @@ const WordPracticeGame = () => {
           }, 
           { 
             role: "user", 
-            content: "Give me 10 random words for a memory game for children aged 7-12. Respond only with a JSON array." 
+            content: `Give me 10 random words for a memory game for ${user.userLevel}. Respond only with a JSON array.` 
           }
         ],
         max_tokens: 250,
@@ -86,7 +88,7 @@ const WordPracticeGame = () => {
             }, 
             { 
               role: "user", 
-              content: "Provide 10 words for a children's memory game. Words should be appropriate for ages 7-12." 
+              content: `Provide 10 words for a ${user.userLevel}'s memory game. Words should be appropriate.`
             }
           ],
           max_tokens: 250,

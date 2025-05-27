@@ -21,8 +21,10 @@ const MessageScreen = ({ route }) => {
 
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState('');
+  const [sending, setSending] = useState(false);
   const flatListRef = useRef();
 
+  // Fetch messages and mark as seen
   const fetchMessages = async () => {
     if (!recipientId || !recipientRole) return;
     try {
@@ -31,7 +33,6 @@ const MessageScreen = ({ route }) => {
       });
       setMessages(res.data);
 
-      // ✅ Mark all messages from recipient as seen
       await serverApi.patch(`/api/messages/seen/${recipientId}`, null, {
         withCredentials: true,
       });
@@ -40,9 +41,16 @@ const MessageScreen = ({ route }) => {
     }
   };
 
-  const sendMessage = async () => {
-    if (!content.trim()) return;
+  useEffect(() => {
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 5000);
+    return () => clearInterval(interval);
+  }, [messages]);
 
+  const sendMessage = async () => {
+    if (!content.trim() || sending) return;
+
+    setSending(true);
     try {
       const newMsg = {
         sender: { id: user._id, role: user.role },
@@ -55,22 +63,27 @@ const MessageScreen = ({ route }) => {
       });
 
       setContent('');
-      fetchMessages();
+      await fetchMessages();
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
     } catch (err) {
       console.error('Error sending message:', err);
+    } finally {
+      setSending(false);
     }
   };
 
-  useEffect(() => {
-    fetchMessages();
-  }, []);
-
-  const renderItem = ({ item }) => {
+  const renderItem = ({ item, index }) => {
     const isMe = item.sender.id === user._id;
+    const isLast = index === messages.length - 1;
     return (
       <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.theirMessage]}>
         <Text style={styles.messageText}>{item.content}</Text>
         <Text style={styles.timestamp}>{moment(item.timestamp).format('LT')}</Text>
+        {isMe && isLast && item.seen && (
+          <Text style={styles.seenText}>✓ Seen</Text>
+        )}
       </View>
     );
   };
@@ -109,9 +122,13 @@ const MessageScreen = ({ route }) => {
             onChangeText={setContent}
             placeholder="Type a message..."
             style={styles.input}
-            multiline={true}
+            multiline
           />
-          <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
+          <TouchableOpacity
+            onPress={sendMessage}
+            style={[styles.sendButton, sending && { opacity: 0.5 }]}
+            disabled={sending}
+          >
             <Icon name="send" size={18} color="#fff" />
           </TouchableOpacity>
         </View>
@@ -154,6 +171,12 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#eee',
     marginTop: 4,
+    textAlign: 'right',
+  },
+  seenText: {
+    fontSize: 10,
+    color: '#ccc',
+    marginTop: 2,
     textAlign: 'right',
   },
   inputContainer: {

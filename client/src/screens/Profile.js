@@ -13,6 +13,7 @@ import serverApi from "../../api/serverApi";
 import { AuthContext } from "../../Auth/AuthContext";
 import Icon from "react-native-vector-icons/FontAwesome";
 import Edit from "../components/Edit";
+import { useFocusEffect } from '@react-navigation/native';
 
 const Profile = () => {
   const { user, setUser } = useContext(AuthContext);
@@ -22,6 +23,24 @@ const Profile = () => {
   const [isAnimating, setIsAnimating] = useState(false); // Prevent interaction during animation
   const [isLoggingOut, setIsLoggingOut] = useState(false); // For logout loading state
   const [inform, setInform] = useState(false);
+
+
+  useFocusEffect(
+  React.useCallback(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await serverApi.get('auth/authenticated', { withCredentials: true });
+        if (res.status === 200) {
+          setUser(res.data.user); // ✅ Update context
+        }
+      } catch (err) {
+        console.error("Failed to refresh user:", err.response?.data || err.message);
+      }
+    };
+
+    fetchUser(); // Call when screen comes into focus
+  }, [])
+);
 
   // Show form with animation
   const showForm = (type) => {

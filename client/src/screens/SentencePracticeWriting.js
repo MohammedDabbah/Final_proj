@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { 
   View, 
   Text, 
@@ -13,6 +13,7 @@ import aiApi from "../../api/aiApi";
 import serverApi from "../../api/serverApi";
 const { width } = Dimensions.get('window');
 import Icon from 'react-native-vector-icons/Feather'; // Assuming you already have this
+import { AuthContext } from '../../Auth/AuthContext';
 const removePunctuation = (sentence) => {
   return sentence.replace(/[.,!?;:()'"-]/g, '').trim().toLowerCase();
 };
@@ -33,6 +34,7 @@ const SentencePuzzleGame = () => {
   const [fadeAnimation] = useState(new Animated.Value(1));
   const countdownTimer = useRef(null);
   const sentenceTimer = useRef(null);
+  const {user} = useContext(AuthContext)
 
   // Generate a batch of 10 sentences for the current round
   const generateSentenceBatch = async () => {
@@ -43,11 +45,11 @@ const SentencePuzzleGame = () => {
         messages: [
           { 
             role: 'system', 
-            content: 'You are a helpful assistant that provides exactly 10 educational sentences for children. Respond with only a JSON array of sentences.' 
+            content: `You are a helpful assistant that provides exactly 10 educational sentences for ${user.userLevel}. Respond with only a JSON array of sentences.` 
           },
           { 
             role: 'user', 
-            content: 'Create 10 short, simple, educational sentences suitable for children aged 7-12. Each sentence should teach something about the world, science, or general knowledge. Respond only with a JSON array of strings.' 
+            content: `Create 10 short, simple, educational sentences suitable for ${user.userLevel}. Each sentence should teach something about the world, science, or general knowledge. Respond only with a JSON array of strings.` 
           }
         ],
         max_tokens: 500,
@@ -85,11 +87,11 @@ const SentencePuzzleGame = () => {
           messages: [
             { 
               role: 'system', 
-              content: 'You provide educational content for children. Respond with exactly 10 simple sentences as a JSON array. Nothing else.' 
+              content: `You provide educational content for ${user.userLevel}. Respond with exactly 10 simple sentences as a JSON array. Nothing else.` 
             },
             { 
               role: 'user', 
-              content: 'Write 10 educational facts as complete sentences for elementary school children. Each sentence should be simple and teach something interesting.' 
+              content: `Write 10 educational facts as complete sentences for ${user.userLevel}'s school. Each sentence should be simple and teach something interesting.` 
             }
           ],
           max_tokens: 500,

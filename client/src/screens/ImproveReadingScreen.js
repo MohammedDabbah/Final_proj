@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { 
   View, 
   Text, 
@@ -15,6 +15,7 @@ import aiApi from "../../api/aiApi";
 import { AI_API_KEY } from '../../api/config';
 import serverApi from "../../api/serverApi";
 import Icon from 'react-native-vector-icons/Feather';
+import { AuthContext } from '../../Auth/AuthContext';
 
 const ImproveReadingScreen = () => {
   // State Management
@@ -30,6 +31,8 @@ const ImproveReadingScreen = () => {
   const [progressAnimation] = useState(new Animated.Value(0));
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [skippedItems, setSkippedItems] = useState(0);
+  const { user } = useContext(AuthContext);
+
 
   // All existing functions remain the same...
   // fetchWords, fetchSentences, playCurrentItemAudio, startRecording, 
@@ -45,7 +48,7 @@ const ImproveReadingScreen = () => {
         messages: [
           { 
             role: "system", 
-            content: "Generate a JSON array of 10 simple, educational words for children aged 7-12. Ensure the words are varied, age-appropriate, and can be easily pronounced." 
+            content: `Generate a JSON array of 10 simple, educational words for ${user.userLevel}. Ensure the words are varied, age-appropriate, and can be easily pronounced.`
           },
           { 
             role: "user", 
@@ -79,7 +82,7 @@ const ImproveReadingScreen = () => {
         messages: [
           { 
             role: "system", 
-            content: "Generate a JSON array of 10 educational sentences suitable for children aged 7-12. Ensure the sentences are clear, informative, and use age-appropriate vocabulary." 
+            content: `Generate a JSON array of 10 educational sentences suitable for ${user.userLevel}. Ensure the sentences are clear, informative, and use age-appropriate vocabulary.` 
           },
           { 
             role: "user", 

@@ -44,22 +44,34 @@ const VocabularyScreen = () => {
     
 
     // Fetch definitions from Merriam-Webster API
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+
     const fetchDefinitions = async (words) => {
-        const fetchedDefinitions = [];
-        for (const word of words) {
+    const batchSize = 25;
+    const result = [];
+
+    for (let i = 0; i < words.length; i += batchSize) {
+        const batch = words.slice(i, i + batchSize);
+        const batchResults = await Promise.all(
+        batch.map(async (word) => {
             try {
-                const response = await merriamApi.get(`/${word}`);
-                if (response.data.length > 0 && response.data[0].shortdef) {
-                    fetchedDefinitions.push({ word, definition: response.data[0].shortdef[0] });
-                } else {
-                    fetchedDefinitions.push({ word, definition: 'Definition not found' });
-                }
+            const response = await merriamApi.get(`/${word}`);
+            const definition = response.data?.[0]?.shortdef?.[0] || 'Definition not found';
+            return { word, definition };
             } catch (error) {
-                fetchedDefinitions.push({ word, definition: 'Error fetching definition' });
+            return { word, definition: 'Error fetching definition' };
             }
-        }
-        return fetchedDefinitions;
+        })
+        );
+        result.push(...batchResults);
+        
+        // Optional: delay slightly between batches to be gentle on API
+        await delay(300);
+    }
+
+    return result;
     };
+
 
     // Handle search
     const handleSearch = async () => {

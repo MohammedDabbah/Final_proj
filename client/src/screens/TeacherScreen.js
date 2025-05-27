@@ -25,7 +25,7 @@ const teacherCardData = [
     subtitle: 'Review and give feedback',
     icon: 'check',
     bgColor: '#4CAF50',
-    screen: 'EvaluateScreen',
+    screen: 'EvaluatePicker',
   },
 //   {
 //     title: 'Performance',

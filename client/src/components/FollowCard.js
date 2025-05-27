@@ -4,33 +4,44 @@ import { AuthContext } from '../../Auth/AuthContext';
 import serverApi from '../../api/serverApi';
 
 const FollowCard = ({ person, isFollowing, onFollowChange }) => {
-  const { user } = useContext(AuthContext);
+  const { user, updateUser } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
 
+
   const toggleFollow = async () => {
-    try {
-      setLoading(true);
-      const isUser = user.role === 'user';
-      const isTeacher = user.role === 'teacher';
-      const endpoint = isFollowing ? 'unfollow' : 'follow';
+  try {
+    setLoading(true);
+    const isUser = user.role === 'user';
+    const isTeacher = user.role === 'teacher';
+    const endpoint = isFollowing ? 'unfollow' : 'follow';
 
-      const body = {
-        ...(isUser ? { teacherId: person._id } : {}),
-        ...(isTeacher ? { studentId: person._id } : {}),
-      };
+    const body = {
+      ...(isUser ? { teacherId: person._id } : {}),
+      ...(isTeacher ? { studentId: person._id } : {}),
+    };
 
-      await serverApi.post(`/api/follow/${endpoint}`, body, {
-        withCredentials: true,
-      });
+    await serverApi.post(`/api/follow/${endpoint}`, body, {
+      withCredentials: true,
+    });
 
-      // optional: update person.Followers locally if you want to
-      if (onFollowChange) onFollowChange(!isFollowing);
-    } catch (err) {
-      console.error('Follow toggle error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Trigger external update if needed
+    if (onFollowChange) onFollowChange(!isFollowing);
+
+    // ✅ Update context Following list
+    const updatedFollowing = isFollowing
+      ? user.Following.filter(id =>
+          typeof id === 'string' ? id !== person._id : id.toString() !== person._id
+        )
+      : [...(user.Following || []), person._id];
+
+    updateUser({ Following: updatedFollowing });
+
+  } catch (err) {
+    console.error('Follow toggle error:', err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <View style={styles.card}>
@@ -46,10 +57,15 @@ const FollowCard = ({ person, isFollowing, onFollowChange }) => {
       <Text style={styles.email}>{person.Email}</Text>
 
       <TouchableOpacity
-        style={[styles.button, isFollowing ? styles.unfollow : styles.follow]}
+        style={[
+          styles.button,
+          isFollowing ? styles.unfollow : styles.follow,
+          loading && { opacity: 0.6 }
+        ]}
         onPress={toggleFollow}
         disabled={loading}
       >
+
         <Text style={styles.buttonText}>
           {loading ? '...' : isFollowing ? 'Unfollow' : 'Follow'}
         </Text>

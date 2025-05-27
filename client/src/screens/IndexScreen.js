@@ -1,5 +1,5 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, Animated, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Animated, Dimensions, TouchableOpacity, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { AuthContext } from '../../Auth/AuthContext';
 import RenderCard from '../components/renderCard';
@@ -30,6 +30,12 @@ const cardData = [
     subtitle: 'Expand your word knowledge',
     icon: 'language',
     bgColor: '#4CAF50',
+  },
+   {
+    title: 'Activity',  // ✅ Added Vocabulary Item
+    subtitle: 'Take your activities',
+    icon: '',
+    bgColor: '#678fd6',
   },
 ];
 
@@ -98,6 +104,7 @@ const IndexScreen = ({ navigation }) => {
       </Animated.View>
 
       {/* Cards Container */}
+      <ScrollView>
       <View style={styles.cardsContainer}>
         {cardData.map((item, index) => (
           
@@ -113,6 +120,7 @@ const IndexScreen = ({ navigation }) => {
           />
         ))}
       </View>
+      </ScrollView>
 
       {/* Bottom Navigation */}
       <Animated.View style={[styles.bottomNav, { opacity: fadeAnim }]}>
@@ -183,6 +191,7 @@ const styles = StyleSheet.create({
   cardsContainer: {
     flex: 1,
     paddingTop: 10,
+    paddingBottom: 80,
   },
   bottomNav: {
     position: 'absolute',

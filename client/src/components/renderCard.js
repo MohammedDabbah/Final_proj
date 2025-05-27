@@ -14,6 +14,8 @@ const RenderCard = ({ item, index, fadeAnim, slideAnim, scaleAnim, navigation })
             navigation.navigate('ImproveReadingScreen');
         } else if (index === 3) { // Vocabulary Card
             setModalVisible(true);
+        } else if (index === 4) {
+            navigation.navigate('ActivityScreen');
         }
     };
 
@@ -70,7 +72,7 @@ const RenderCard = ({ item, index, fadeAnim, slideAnim, scaleAnim, navigation })
                             style={styles.modalButton} 
                             onPress={() => {
                                 setModalVisible(false);
-                                navigation.navigate('Quiz', { level: 'userLevel' });
+                                navigation.navigate('Quiz');
                             }}
                         >
                             <Text style={styles.modalButtonText}>Take a Quiz</Text>

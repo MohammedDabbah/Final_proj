@@ -174,6 +174,32 @@ router.get('/followers', async (req, res) => {
       res.status(500).json({ message: 'Error fetching following' });
     }
   });
+
+  router.get('/followers/by-level', async (req, res) => {
+  const { level } = req.query;
+  const user = req.user;
+
+  if (!user || user.role !== 'teacher') {
+    return res.status(403).json({ message: 'Only teachers can fetch followers by level' });
+  }
+
+  try {
+    const teacher = await Teacher.findById(user._id).populate({
+      path: 'Followers',
+      match: { userLevel: level }, // assuming User has userLevel
+      select: 'FName LName Email userLevel',
+    });
+
+    if (!teacher) {
+      return res.status(404).json({ message: 'Teacher not found' });
+    }
+
+    res.status(200).json({ followers: teacher.Followers });
+  } catch (err) {
+    console.error('Get followers by level error:', err);
+    res.status(500).json({ message: 'Error fetching filtered followers' });
+  }
+});
     
 
 module.exports = router;

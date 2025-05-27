@@ -125,6 +125,49 @@ const StudentProgressScreen = ({ route }) => {
         </View>
 
         {/* Add more statCards here for Sentence Practice, Word Reading, Sentence Reading */}
+
+        {/* Sentence Practice */}
+    <View style={styles.statCard}>
+      <View style={styles.statHeader}>
+        <Text style={styles.statTitle}>Sentence Practice</Text>
+        <Icon name="file-text" size={20} color="#B052F7" />
+      </View>
+      <View style={styles.statsRow}>
+        <View style={styles.stat}>
+          <Text style={styles.statValue}>{p.writing.sentencePractice.gamesPlayed}</Text>
+          <Text style={styles.statLabel}>Games</Text>
+        </View>
+        <View style={styles.stat}>
+          <Text style={styles.statValue}>{p.writing.sentencePractice.totalSentences}</Text>
+          <Text style={styles.statLabel}>Sentences</Text>
+        </View>
+        <View style={styles.stat}>
+          <Text style={styles.statValue}>{p.writing.sentencePractice.correctSentences}</Text>
+          <Text style={styles.statLabel}>Correct</Text>
+        </View>
+      </View>
+      <Text style={styles.accuracyLabel}>Accuracy</Text>
+      <View style={styles.progressBarContainer}>
+        <View
+          style={[
+            styles.progressBar,
+            {
+              width: `${calculatePercentage(
+                p.writing.sentencePractice.correctSentences,
+                p.writing.sentencePractice.totalSentences || 1
+              )}%`,
+            },
+          ]}
+        />
+      </View>
+      <Text style={styles.accuracyValue}>
+        {calculatePercentage(
+          p.writing.sentencePractice.correctSentences,
+          p.writing.sentencePractice.totalSentences || 1
+        )}%
+      </Text>
+    </View>
+
       </ScrollView>
     </SafeAreaView>
   );

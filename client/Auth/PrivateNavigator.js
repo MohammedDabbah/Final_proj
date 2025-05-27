@@ -23,7 +23,10 @@ import StudentProgressScreen from "../src/screens/StudentProgressScreen";
 import MessageListScreen from "../src/screens/MessageListScreen";
 import MessageScreen from "../src/screens/MessageScreen";
 import ActivityManagerScreen from "../src/screens/ActivityManagerScreen";
+import ActivityScreen from "../src/screens/ActivityScreen";
 // import EvaluateScreen from "../src/screens/EvaluateScreen";
+import EvaluateTasksScreen from "../src/screens/EvaluateTasksScreen";
+import EvaluateActivityPicker from "../src/screens/EvaluateActivityPicker";
 
 const Stack = createStackNavigator();
 
@@ -62,6 +65,9 @@ const PrivateNavigator = () => {
       <Stack.Screen name="Messages" component={MessageListScreen} />
       <Stack.Screen name="MessageScreen" component={MessageScreen} />
       <Stack.Screen name="ActivityManagerScreen" component={ActivityManagerScreen} />
+      <Stack.Screen name="ActivityScreen" component={ActivityScreen} />
+      <Stack.Screen name="EvaluateScreen" component={EvaluateTasksScreen} />
+      <Stack.Screen name="EvaluatePicker" component={EvaluateActivityPicker}/>
       {/* <Stack.Screen name="EvaluateScreen" component={EvaluateScreen} /> */}
       {/* ✅ Add future teacher-specific screens here too if needed */}
     </Stack.Navigator>

@@ -190,24 +190,35 @@ router.get('/unknown-words', async (req, res) => {
   }
 });
 
-router.post('/unknown-words', async(req, res)=>{
+router.post('/unknown-words', async (req, res) => {
   const { unknownWords } = req.body;
-    const userId = req.user.id; // Ensure user is authenticated
-    console.log(userId, 'test');
+  const userId = req.user.id;
 
-    try {
-        const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ error: "User not found" });
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
 
-        // Append unknown words to user's profile
-        user.unknownWords = [...user.unknownWords, ...unknownWords];
+    // Avoid duplicates
+    const existingWords = user.unknownWords || [];
+    const newWords = unknownWords.filter(
+      (wordObj) =>
+        !existingWords.some(
+          (existing) => existing.word.toLowerCase() === wordObj.word.toLowerCase()
+        )
+    );
 
-        await user.save();
-        res.status(200).json({ message: "Words saved successfully!" });
-    } catch (err) {
-        res.status(500).json({ error: "Error saving words", message: err.message });
+    // Only update if there are new words
+    if (newWords.length > 0) {
+      user.unknownWords = [...existingWords, ...newWords];
+      await user.save();
     }
+
+    res.status(200).json({ message: "Words saved successfully!", added: newWords.length });
+  } catch (err) {
+    res.status(500).json({ error: "Error saving words", message: err.message });
+  }
 });
+
 
 router.post("/update-unknown-words", async (req, res) => {
   const { unknownWords } = req.body;

@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import serverApi from '../../api/serverApi';
 import { AuthContext } from '../../Auth/AuthContext';
+import { CommonActions } from '@react-navigation/native';
+
 
 const ReviewMistakesScreen = ({ navigation }) => {
     const { user } = useContext(AuthContext);
@@ -12,7 +14,6 @@ const ReviewMistakesScreen = ({ navigation }) => {
         fetchWrongAnswers();
     }, []);
 
-    // Fetch wrong answers from the backend
     const fetchWrongAnswers = async () => {
         try {
             const response = await serverApi.get('/unknown-words', { withCredentials: true });
@@ -24,17 +25,35 @@ const ReviewMistakesScreen = ({ navigation }) => {
         }
     };
 
-    // Start a new quiz with only the wrong answers
     const startQuizWithMistakes = () => {
         if (wrongAnswers.length === 0) {
             Alert.alert('No Mistakes', 'You don’t have any mistakes to review.');
             return;
         }
-        
-        navigation.navigate('Quiz', { level: 'mistakes', words: wrongAnswers.map(item => item.word) });
+
+        navigation.navigate('Quiz', {
+            level: 'mistakes',
+            words: wrongAnswers.map(item => item.word),
+        });
     };
-    
-    if (loading) return <ActivityIndicator size="large" color="#6B5ECD" style={{ flex: 1, justifyContent: 'center' }} />;
+
+   const goToHome = () => {
+        navigation.dispatch(
+            CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'Home' }], // 🧠 Use your actual home screen name
+            })
+        );
+    };
+
+    if (loading)
+        return (
+            <ActivityIndicator
+                size="large"
+                color="#6B5ECD"
+                style={{ flex: 1, justifyContent: 'center' }}
+            />
+        );
 
     return (
         <View style={styles.container}>
@@ -58,6 +77,11 @@ const ReviewMistakesScreen = ({ navigation }) => {
                     </TouchableOpacity>
                 </>
             )}
+
+            {/* ✅ New Button to go back to Home */}
+            <TouchableOpacity style={styles.homeButton} onPress={goToHome}>
+                <Text style={styles.homeButtonText}>Back to Home</Text>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -113,6 +137,18 @@ const styles = StyleSheet.create({
         color: '#FFF',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    homeButton: {
+        backgroundColor: '#CCCCCC',
+        paddingVertical: 12,
+        borderRadius: 10,
+        marginTop: 15,
+        alignItems: 'center',
+    },
+    homeButtonText: {
+        color: '#333',
+        fontSize: 16,
+        fontWeight: '600',
     },
 });
 

@@ -15,8 +15,10 @@ import serverApi from '../../api/serverApi';
 const MessageListScreen = ({ navigation }) => {
   const { user } = useContext(AuthContext);
   const [followers, setFollowers] = useState([]);
+  const [chatMeta, setChatMeta] = useState({});
   const [loading, setLoading] = useState(true);
 
+  // Fetch followers
   const fetchFollowers = async () => {
     try {
       const res = await serverApi.get('/api/follow/following', {
@@ -29,21 +31,51 @@ const MessageListScreen = ({ navigation }) => {
     }
   };
 
+  // Fetch unread chat info
+  const fetchChatMeta = async () => {
+    try {
+      const res = await serverApi.get('/api/messages/chat-list', {
+        withCredentials: true,
+      });
+      const meta = {};
+      res.data.forEach(chat => {
+        meta[chat.id] = chat;
+      });
+      return meta;
+    } catch (err) {
+      console.error('Error fetching chat list:', err);
+      return {};
+    }
+  };
+
   useEffect(() => {
-    const loadFollowers = async () => {
-      const data = await fetchFollowers();
-      setFollowers(data);
+    let interval;
+
+    const loadData = async () => {
+      const [followersData, chatList] = await Promise.all([
+        fetchFollowers(),
+        fetchChatMeta(),
+      ]);
+      setFollowers(followersData);
+      setChatMeta(chatList);
       setLoading(false);
     };
 
-    loadFollowers();
+    loadData();
+    interval = setInterval(loadData, 5000); // update every 5s
+
+    return () => clearInterval(interval); // cleanup on unmount
   }, []);
-  
 
   const renderItem = ({ item }) => {
     const fullName = `${item.FName || 'Unnamed'} ${item.LName || ''}`;
     const email = item.Email || 'No email';
-    const role = item.role || 'user'; // fallback
+    const role = item.role || 'user';
+    const chat = chatMeta[item._id];
+    const hasUnread =
+    chat &&
+    !chat.seen &&                  // the last message hasn't been seen
+    chat.senderId === item._id;    // it was sent by *them*, not me
 
 
     return (
@@ -57,7 +89,12 @@ const MessageListScreen = ({ navigation }) => {
         }
       >
         <View style={styles.info}>
-          <Text style={styles.name}>{fullName}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={styles.name}>{fullName}</Text>
+            {hasUnread &&  <View style={styles.newBadge}>
+          <Text style={styles.badgeText}>New</Text>
+        </View>}
+          </View>
           <Text style={styles.email}>{email}</Text>
         </View>
         <Icon name="envelope" size={20} color="#B052F7" />
@@ -97,7 +134,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: 'center',
     color: '#3D2C8D',
-    marginTop:10,
+    marginTop: 10,
   },
   card: {
     backgroundColor: '#fff',
@@ -129,6 +166,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#999',
   },
+  unreadDot: {
+    width: 8,
+    height: 8,
+    backgroundColor: 'red',
+    borderRadius: 4,
+    marginLeft: 6,
+  },
+  newBadge: {
+  backgroundColor: '#FF3B30',
+  paddingVertical: 2,
+  paddingHorizontal: 8,
+  borderRadius: 10,
+  marginLeft: 10,
+},
+badgeText: {
+  color: 'white',
+  fontSize: 12,
+  fontWeight: 'bold',
+},
 });
 
 export default MessageListScreen;

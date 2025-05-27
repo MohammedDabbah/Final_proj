@@ -32,15 +32,20 @@ const FollowListScreen = ({ route }) => {
         withCredentials: true,
       });
   
-      const freshList = (res.data.following || []).map(p => ({ ...p }));
+      const freshList = (res.data.following || []).map(p => ({
+        ...p,
+        isFollowing: true, // ✅ new local flag
+      }));
+      setFollowingList(freshList);
   
       // 🔁 Match searched person and update their followers list in case they changed
-      if (person) {
-        const matchIndex = freshList.findIndex(p => p._id === person._id);
-        if (matchIndex !== -1) {
-          setPerson(freshList[matchIndex]); // this ensures search card also updates
+      if (person?._id) {
+          const matchIndex = freshList.findIndex(p => p._id === person._id);
+          if (matchIndex !== -1) {
+            setPerson(freshList[matchIndex]);
+          }
         }
-      }
+
   
       setFollowingList(freshList);
     } catch (err) {
@@ -142,24 +147,21 @@ const FollowListScreen = ({ route }) => {
         <FlatList
           data={followingList}
           keyExtractor={(item) => item._id}
-          renderItem={({ item, index }) => (
-          <FollowItem
-            person={item}
-            userId={user._id}
-            onFollowChange={(newStatus) => {
-              const updatedList = [...followingList];
-              if (newStatus) {
-                updatedList[index].Followers = [...(updatedList[index].Followers || []), user._id];
-              } else {
-                updatedList[index].Followers = updatedList[index].Followers?.filter(f => {
-                  const id = typeof f === 'string' ? f : f._id;
-                  return id?.toString() !== user._id?.toString();
-                }) || [];
-              }
-              setFollowingList(updatedList);
-            }}
-          />
-        )}
+         renderItem={({ item, index }) => {
+          return (
+            <FollowCard
+              person={item}
+              isFollowing={item.isFollowing}
+              onFollowChange={(newStatus) => {
+                const updatedList = [...followingList];
+                updatedList[index].isFollowing = newStatus; // ✅ Fix toggle
+                setFollowingList(updatedList);
+              }}
+            />
+          );
+        }}
+
+
           ListEmptyComponent={<Text style={styles.emptyText}>You’re not following anyone yet.</Text>}
         />
       )}
