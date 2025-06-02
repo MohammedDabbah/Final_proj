@@ -77,12 +77,15 @@ const LevelSelectionScreen = ({ navigation }) => {
     
             // ✅ Use `setTimeout` to delay navigation slightly
             setTimeout(() => {
-                console.log("🔄 Navigating to Home...");
-                navigation.reset({
-                    index: 0,
-                    routes: [{ name: "Home" }], // ✅ Ensure this matches your navigator's screen name
-                });
+            console.log("🔄 Navigating to Home...");
+            navigation.dispatch(
+                CommonActions.reset({
+                index: 0,
+                routes: [{ name: user?.role === 'teacher' ? 'TeacherHome' : 'StudentHome' }],
+                })
+            );
             }, 500);
+
             
         } catch (err) {
             console.error("❌ Error updating user level:", err);
