@@ -34,16 +34,19 @@ const PrivateNavigator = () => {
   const { user } = useContext(AuthContext);
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: true }}>
-      {/* ✅ Conditional start screen based on role */}
-      {console.log(user.role)}
-      {user?.role === 'teacher' ? (
-        <Stack.Screen name="Home" component={TeacherScreen} />
-      ) : user?.evaluate === false ? (
-        <Stack.Screen name="LevelSelection" component={LevelSelectionScreen} />
-      ) : (
-        <Stack.Screen name="Home" component={IndexScreen} />
-      )}
+<Stack.Navigator
+  initialRouteName={
+    user?.role === 'teacher'
+      ? 'TeacherHome'
+      : user?.evaluate === false
+      ? 'LevelSelection'
+      : 'StudentHome'
+  }
+  screenOptions={{ headerShown: true }}
+>
+      <Stack.Screen name="TeacherHome" component={TeacherScreen} />
+  <Stack.Screen name="StudentHome" component={IndexScreen} />
+  <Stack.Screen name="LevelSelection" component={LevelSelectionScreen} />
 
       {/* ✅ Common student/user screens */}
       <Stack.Screen name="Profile" component={ProfileStudentScreen} />

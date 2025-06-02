@@ -1,10 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { CommonActions, useNavigation } from "@react-navigation/native";
+import { useContext } from 'react';
+import { AuthContext } from '../../Auth/AuthContext';
 
 const ResultsScreen = ({ route}) => {
     const { readingEvaluations = [], speechEvaluations = [], averageScore = 0 } = route.params || {};
     const navigation = useNavigation();
+    const { user } = useContext(AuthContext); // Access user data from AuthContext
     
 
     // 🎯 Determine Level Based on Score
@@ -19,12 +22,12 @@ const ResultsScreen = ({ route}) => {
         <ScrollView style={styles.container}>
             <Text style={styles.header}>Assessment Results</Text>
             <TouchableOpacity onPress={()=>{
-                 navigation.dispatch(
-                    CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'Home' }]
-                    }
-            ))
+            navigation.dispatch(
+            CommonActions.reset({
+                index: 0,
+                routes: [{ name: user?.role === 'user' && 'StudentHome' }],
+            })
+            );
             }}>
             <View style={styles.levelContainer}>
                 <Text style={styles.levelText}>🏆 Your Level: {userLevel}</Text>

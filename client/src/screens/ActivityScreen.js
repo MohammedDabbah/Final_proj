@@ -246,19 +246,24 @@ const sendAudioToAI = async (uri) => {
 if (isSubmitted) {
     return (
       <>
-      <View style={styles.taskCard}>
-        <Text style={styles.taskPrompt}>{task.prompt}</Text>
-        <Text style={{ marginTop: 10, fontWeight: 'bold' }}>Your answer:</Text>
-        <Text style={{ color: '#333' }}>
-          {currentActivity.responses?.[currentTaskIndex] || '—'}
-        </Text>
-        <Text style={{ marginTop: 10, fontWeight: 'bold' }}>Feedback:</Text>
-        <Text style={{ color: '#666' }}>
-          {currentActivity.feedback?.[currentTaskIndex] || 'No feedback yet.'}
-        </Text>
-      </View>
+      {currentActivity.tasks.map((task, index) => (
+        <View key={index} style={styles.taskCard}>
+          <Text style={styles.taskPrompt}>Task {index + 1}: {task.prompt}</Text>
+
+          <Text style={{ marginTop: 10, fontWeight: 'bold' }}>Your answer:</Text>
+          <Text style={{ color: '#333' }}>
+            {currentActivity.responses?.[index] || '—'}
+          </Text>
+
+          <Text style={{ marginTop: 10, fontWeight: 'bold' }}>Feedback:</Text>
+          <Text style={{ color: '#666' }}>
+            {currentActivity.feedback?.[index] || 'No feedback yet.'}
+          </Text>
+        </View>
+      ))}
+
       <TouchableOpacity
-            style={[styles.sideButton, styles.skipButton,{marginLeft:'20'}]}
+            style={[styles.sideButton, styles.skipButton,{marginLeft:'20',marginBottom:'20'}]}
             onPress={() => {
               setCurrentActivity(null);
               setCurrentTaskIndex(0);
