@@ -25,7 +25,7 @@ const Edit = () => {
     try {
       const response = await serverApi.post(
         '/change-details',
-        { fName, lName, password, newPwd },
+        { fName, lName, password, newPwd, role:user.role },
         { withCredentials: true }
       );
 

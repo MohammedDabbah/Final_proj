@@ -219,7 +219,7 @@ const sendAudioToAI = async (uri) => {
           <Text style={styles.emptyStateSubtext}>Check back later for new assignments</Text>
         </View>
       ) : (
-        <View style={styles.activitiesList}>
+        <ScrollView style={styles.activitiesList}>
           {activities.map((activity) => (
             <TouchableOpacity
               key={activity._id}
@@ -247,7 +247,7 @@ const sendAudioToAI = async (uri) => {
               <Icon name="chevron-right" size={16} color="#CCCCCC" />
             </TouchableOpacity>
           ))}
-        </View>
+        </ScrollView>
       )}
     </View>
   );

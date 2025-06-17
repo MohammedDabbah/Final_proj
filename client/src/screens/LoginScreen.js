@@ -170,7 +170,7 @@ const LoginScreen = () => {
       </TouchableOpacity>
 
       {/* Social Login */}
-      <Text style={styles.socialText}>Don't have an account? <Text style={styles.signUpLink}>Sign up</Text></Text>
+      <Text style={styles.socialText}>Don't have an account? <Text style={styles.signUpLink}>Back to Sign up</Text></Text>
       
       <TouchableOpacity 
         style={styles.googleButton}
@@ -186,7 +186,7 @@ const LoginScreen = () => {
           }
         }}
       >
-        <Text style={styles.googleText}>Already have an account? Log in</Text>
+        <Text style={styles.googleText}>Continue with google account</Text>
       </TouchableOpacity>
     </View>
   );

@@ -272,7 +272,7 @@ const SignupScreen = () => {
           }
         }}
       >
-        <Text style={styles.socialText}>Already have an account? <Text style={styles.loginLink}>Log in</Text></Text>
+        <Text style={styles.socialText}>Continue with <Text style={styles.loginLink}>Google account</Text></Text>
       </TouchableOpacity>
     </ScrollView>
   );

@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const User = require('../models/User');
+const Teacher = require('../models/Teacher');
 const bcrypt = require('bcrypt');
 const authRoutes = require('./auth');
 const { generateFourDigitCode, sendEmail } = require('../config/nodemailer');
@@ -34,18 +35,20 @@ router.get('/profile', (req, res) => {
 });
 
 router.post('/change-details', async (req, res) => {
-  const { fName, lName, password, newPwd } = req.body;
+  const { fName, lName, password, newPwd, role} = req.body;
+  console.log(req.body);
 
   if (!req.isAuthenticated || !req.isAuthenticated()) {
     return res.status(401).json({ error: 'You are not authenticated.' });
   }
 
-  if (!fName && !lName && !password && !newPwd) {
+  if (!fName && !lName && !password && !newPwd && !role) {
     return res.status(400).json({ error: 'No fields to update provided.' });
   }
 
   try {
-    const user = await User.findById(req.user._id);
+    const UserModel = role === 'teacher' ? Teacher : User;
+    const user = await UserModel.findById(req.user._id);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
@@ -79,14 +82,15 @@ router.post('/change-details', async (req, res) => {
 const verificationCodes = {}; // Store verification codes temporarily
 
 router.post('/forgot-password', async (req, res) => {
-  const { email } = req.body;
+  const { email ,role} = req.body;
 
   if (!email) {
     return res.status(400).json({ error: "Email is required" });
   }
 
   try {
-    const user = await User.findOne({ Email: email });
+     const UserModel = role === 'teacher' ? Teacher : User;
+    const user = await UserModel.findOne({ Email: email });
     if (!user) {
       return res.status(404).json({ error: "User not found with this email" });
     }
@@ -109,9 +113,9 @@ router.post('/forgot-password', async (req, res) => {
 });
 
 router.post('/reset-password', async (req, res) => {
-  const { email, verificationCode, newPassword } = req.body;
+  const { email, verificationCode, newPassword ,role} = req.body;
 
-  if (!email || !verificationCode || !newPassword) {
+  if (!email || !verificationCode || !newPassword || !role) {
     return res.status(400).json({ error: "All fields are required" });
   }
 
@@ -120,8 +124,8 @@ router.post('/reset-password', async (req, res) => {
     if (`${verificationCodes[email]}` !== verificationCode) {
       return res.status(400).json({ error: "Invalid verification code" });
     }
-
-    const user = await User.findOne({ Email: email });
+     const UserModel = role === 'teacher' ? Teacher : User;
+    const user = await UserModel.findOne({ Email: email });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
