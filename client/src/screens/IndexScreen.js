@@ -26,29 +26,26 @@ const cardData = [
     bgColor: '#FF6B81',
   },
   {
-    title: 'Vocabulary',  // ✅ Added Vocabulary Item
+    title: 'Vocabulary',
     subtitle: 'Expand your word knowledge',
     icon: 'language',
     bgColor: '#4CAF50',
   },
    {
-    title: 'Activity',  // ✅ Added Vocabulary Item
+    title: 'Activity',
     subtitle: 'Take your activities',
-    icon: '',
+  icon: 'bolt', 
     bgColor: '#678fd6',
   },
 ];
 
-
 const IndexScreen = ({ navigation }) => {
-  const { user } = useContext(AuthContext); // Access user data from AuthContext
+  const { user } = useContext(AuthContext);
   const [initialWord, setInitialWord] = useState('');
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(width)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
-
-  
 
   useEffect(() => {
     Animated.parallel([
@@ -92,7 +89,7 @@ const IndexScreen = ({ navigation }) => {
             }
           }}
         >
-          <Icon name="search" size={20} color="#B052F7" style={styles.searchIcon} />
+          <Icon name="search" size={20} color="#6B5ECD" style={styles.searchIcon} />
         </TouchableOpacity>
         <TextInput
           placeholder="search a word"
@@ -105,30 +102,28 @@ const IndexScreen = ({ navigation }) => {
 
       {/* Cards Container */}
       <ScrollView>
-      <View style={styles.cardsContainer}>
-        {cardData.map((item, index) => (
-          
-          <RenderCard
-            key={index}
-            item={item}
-            index={index}
-            fadeAnim={fadeAnim}
-            slideAnim={slideAnim}
-            scaleAnim={scaleAnim}
-            navigation={navigation}
-            
-          />
-        ))}
-      </View>
+        <View style={styles.cardsContainer}>
+          {cardData.map((item, index) => (
+            <RenderCard
+              key={index}
+              item={item}
+              index={index}
+              fadeAnim={fadeAnim}
+              slideAnim={slideAnim}
+              scaleAnim={scaleAnim}
+              navigation={navigation}
+            />
+          ))}
+        </View>
       </ScrollView>
 
-      {/* Bottom Navigation */}
+      {/* Enhanced Bottom Navigation */}
       <Animated.View style={[styles.bottomNav, { opacity: fadeAnim }]}>
         {[
-          { name: 'FollowList', icon: 'user-plus', type: 'user' },
-          { name: 'Messages', icon: 'envelope' },
-          { name: 'Progress', icon: 'graduation-cap' },
-          { name: 'Profile', icon: 'user' },
+          { name: 'FollowList', icon: 'user-plus', type: 'user', displayName: 'Teachers' },
+          { name: 'Messages', icon: 'envelope', displayName: 'Messages' },
+          { name: 'Progress', icon: 'graduation-cap', displayName: 'Progress' },
+          { name: 'Profile', icon: 'user', displayName: 'Profile' },
         ].map((item, index) => (
           <TouchableOpacity
             key={index}
@@ -136,9 +131,12 @@ const IndexScreen = ({ navigation }) => {
             onPress={() => {
               navigation.navigate(item.name);
             }}
+            activeOpacity={0.7}
           >
-            <Icon name={item.icon} size={24} color="#B052F7" />
-            <Text style={styles.navText}>{item.name}</Text>
+            <View style={styles.navIconContainer}>
+              <Icon name={item.icon} size={20} color="#6B5ECD" />
+            </View>
+            <Text style={styles.navText}>{item.displayName}</Text>
           </TouchableOpacity>
         ))}
       </Animated.View>
@@ -163,7 +161,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   nameText: {
-    color: '#B052F7',
+    color: '#6B5ECD',
     fontWeight: 'bold',
   },
   searchContainer: {
@@ -191,34 +189,47 @@ const styles = StyleSheet.create({
   cardsContainer: {
     flex: 1,
     paddingTop: 10,
-    paddingBottom: 80,
+    paddingBottom: 80, // Back to original size
   },
+
+  // Enhanced Bottom Navigation - Smaller Size
   bottomNav: {
     position: 'absolute',
-    bottom: 20,
-    left: 10,
-    right: 10,
+    bottom: 20, // Back to original position
+    left: 10,   // Back to original margins
+    right: 10,  // Back to original margins
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingVertical: 10,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderColor: '#fff',
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    paddingVertical: 10, // Back to original padding
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10, // Back to original radius
+    shadowColor: '#6B5ECD',
+    shadowOffset: { width: 0, height: 4 }, // Reduced shadow
+    shadowOpacity: 0.1, // Reduced opacity
+    shadowRadius: 8,    // Reduced radius
+    elevation: 6,       // Reduced elevation
+    borderWidth: 1,     // Thinner border
+    borderColor: '#F0EBFF',
   },
   navItem: {
     alignItems: 'center',
+    paddingVertical: 4,  // Reduced padding
+    paddingHorizontal: 8, // Reduced padding
+  },
+  navIconContainer: {
+    width: 36,    // Smaller icon container
+    height: 36,   // Smaller icon container
+    borderRadius: 10, // Smaller radius
+    backgroundColor: '#F0EBFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4, // Reduced margin
   },
   navText: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 5,
+    fontSize: 11, // Slightly smaller text
+    color: '#6B5ECD',
+    fontWeight: '600',
   },
 });
 

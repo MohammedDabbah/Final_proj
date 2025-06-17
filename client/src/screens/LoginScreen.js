@@ -18,28 +18,25 @@ import * as WebBrowser from "expo-web-browser";
 import {makeRedirectUri} from 'expo-auth-session';
 import {WEB_CLIENT_ID, ANDRIOD_CLIENT_ID, IOS_CLIENT_ID} from '@env';
 
-
-
 WebBrowser.maybeCompleteAuthSession();
 
 const LoginScreen = () => {
-  const { setUser } = useContext(AuthContext); // Removed 'user' as it's not needed here
-  const navigation = useNavigation(); // Corrected navigation hook
+  const { setUser } = useContext(AuthContext);
+  const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("user"); // ✅ Role state
+  const [role, setRole] = useState("user");
   const [loading, setLoading] = useState(false);
 
-
-   // Google Auth setup (no condition on platform)
-   const [request, response, promptAsync] = Google.useAuthRequest({
+  // Google Auth setup
+  const [request, response, promptAsync] = Google.useAuthRequest({
     iosClientId: IOS_CLIENT_ID,
     androidClientId: ANDRIOD_CLIENT_ID,
     webClientId: WEB_CLIENT_ID,
     expoClientId: WEB_CLIENT_ID,
     scopes: ["openid", "profile", "email"],
-    responseType: "id_token", // ✅ REQUIRED to get id_token
-    redirectUri: makeRedirectUri({ useProxy: true }), // ✅ FIXED
+    responseType: "id_token",
+    redirectUri: makeRedirectUri({ useProxy: true }),
   });
 
   const processGoogleLoginResponse = async () => {
@@ -53,16 +50,11 @@ const LoginScreen = () => {
       console.log("Google login canceled or dismissed.");
     }
   };
- 
 
   useEffect(() => {
     if (!response) return;
-  
-    processGoogleLoginResponse(); // your logic
+    processGoogleLoginResponse();
   }, [response]);
-  
-  
-  
 
   const handleGoogleLogin = async (idToken) => {
     try {
@@ -89,8 +81,7 @@ const LoginScreen = () => {
 
       if (response.status === 200) {
         const loggedInUser = response.data.user;
-        setUser(loggedInUser); // ✅ Set user state
-
+        setUser(loggedInUser);
         alert("Login successful!");
       }
     } catch (err) {
@@ -109,7 +100,9 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back</Text>
+      <Text style={styles.subtitle}>Login to continue your learning journey</Text>
+      
+      {/* Role Selector */}
       <View style={styles.roleSelector}>
         <TouchableOpacity
           style={[
@@ -118,7 +111,7 @@ const LoginScreen = () => {
           ]}
           onPress={() => setRole("user")}
         >
-          <Text style={styles.roleText}>User</Text>
+          <Text style={[styles.roleText, role === "user" && styles.roleTextSelected]}>Student</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
@@ -127,50 +120,73 @@ const LoginScreen = () => {
           ]}
           onPress={() => setRole("teacher")}
         >
-          <Text style={styles.roleText}>Teacher</Text>
+          <Text style={[styles.roleText, role === "teacher" && styles.roleTextSelected]}>Teacher</Text>
         </TouchableOpacity>
       </View>
-      <TextInput
-        placeholder="Email"
-        autoCapitalize="none"
-        autoCorrect={false}
-        style={styles.input}
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        placeholder="Password"
-        style={styles.input}
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-      <TouchableOpacity style={styles.checkboxContainer} onPress={() => navigation.navigate("reset")}>
-        <Text style={styles.link}>Forgot password?</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+
+      {/* Email Input */}
+      <View style={styles.inputContainer}>
+        <Icon name="envelope" size={16} color="#6B7280" style={styles.inputIcon} />
+        <TextInput
+          placeholder="username@gmail.com"
+          autoCapitalize="none"
+          autoCorrect={false}
+          style={styles.input}
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
+          placeholderTextColor="#9CA3AF"
+        />
+      </View>
+
+      {/* Password Input */}
+      <View style={styles.inputContainer}>
+        <Icon name="lock" size={16} color="#6B7280" style={styles.inputIcon} />
+        <TextInput
+          placeholder="••••••••"
+          style={styles.input}
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+          placeholderTextColor="#9CA3AF"
+        />
+      </View>
+
+      {/* Remember & Forgot */}
+      <View style={styles.optionsRow}>
+        <Text style={styles.rememberText}>Remember</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("reset")}>
+          <Text style={styles.forgotText}>Forgot password?</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Login Button */}
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={loading}>
         {loading ? (
-          <ActivityIndicator size="small" color="#fff" />
+          <ActivityIndicator size="small" color="#FFFFFF" />
         ) : (
-          <Text style={styles.buttonText}>Sign In</Text>
+          <Text style={styles.loginButtonText}>Log in</Text>
         )}
       </TouchableOpacity>
-      <TouchableOpacity onPress={() =>{
-        if (request) {
-          if (Platform.OS === "web") {
-                promptAsync(); // no proxy
-              } else {
-                promptAsync({ useProxy: true }); // use proxy for native
-              }
-        } else {
-          alert("Google login is not ready. Try again.");
-        }
-      }}>
-      <Text style={styles.socialText}>Sign in with</Text>
-      <View style={styles.socialIcons}>
-        <Icon name="google" size={30} color="#DB4437" style={styles.icon} />
-      </View>
+
+      {/* Social Login */}
+      <Text style={styles.socialText}>Don't have an account? <Text style={styles.signUpLink}>Sign up</Text></Text>
+      
+      <TouchableOpacity 
+        style={styles.googleButton}
+        onPress={() => {
+          if (request) {
+            if (Platform.OS === "web") {
+              promptAsync();
+            } else {
+              promptAsync({ useProxy: true });
+            }
+          } else {
+            alert("Google login is not ready. Try again.");
+          }
+        }}
+      >
+        <Text style={styles.googleText}>Already have an account? Log in</Text>
       </TouchableOpacity>
     </View>
   );
@@ -179,76 +195,120 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     padding: 20,
-    backgroundColor: "#EEF2FA",
+    backgroundColor: "#FFFFFF",
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
+  subtitle: {
+    fontSize: 14,
+    color: "#6B7280",
     textAlign: "center",
+    marginBottom: 30,
+    fontWeight: "400",
   },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 15,
-    backgroundColor: "#fff",
-  },
-  checkboxContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 15,
-  },
-  link: {
-    color: "#B052F7",
-    fontWeight: "bold",
-  },
-  button: {
-    backgroundColor: "#B052F7",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  socialText: {
-    textAlign: "center",
-    marginVertical: 10,
-    color: "#666",
-  },
-  socialIcons: {
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  icon: {
-    marginHorizontal: 10,
-  },
+  
+  // Role Selector
   roleSelector: {
     flexDirection: "row",
-    justifyContent: "center",
-    marginBottom: 20,
+    backgroundColor: "#F9FAFB",
+    borderRadius: 8,
+    padding: 4,
+    marginBottom: 24,
   },
   roleButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    backgroundColor: "#ccc",
-    marginHorizontal: 10,
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    alignItems: "center",
   },
   roleSelected: {
     backgroundColor: "#6B5ECD",
   },
   roleText: {
-    color: "#fff",
-    fontWeight: "bold",
-  }
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#6B7280",
+  },
+  roleTextSelected: {
+    color: "#FFFFFF",
+  },
+
+  // Input Styles
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginBottom: 16,
+    backgroundColor: "#FFFFFF",
+  },
+  inputIcon: {
+    marginRight: 12,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: "#1F2937",
+    fontWeight: "400",
+  },
+
+  // Options Row
+  optionsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  rememberText: {
+    fontSize: 14,
+    color: "#6B7280",
+    fontWeight: "400",
+  },
+  forgotText: {
+    fontSize: 14,
+    color: "#6B5ECD",
+    fontWeight: "500",
+  },
+
+  // Login Button
+  loginButton: {
+    backgroundColor: "#6B5ECD",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  loginButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+
+  // Social Text
+  socialText: {
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  signUpLink: {
+    color: "#6B5ECD",
+    fontWeight: "500",
+  },
+
+  // Google Button
+  googleButton: {
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  googleText: {
+    fontSize: 14,
+    color: "#6B7280",
+    fontWeight: "400",
+  },
 });
 
 export default LoginScreen;

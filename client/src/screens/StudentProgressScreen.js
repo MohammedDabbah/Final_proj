@@ -45,8 +45,8 @@ const StudentProgressScreen = ({ route }) => {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#B052F7" />
-          <Text style={styles.loadingText}>Loading student's progress...</Text>
+          <ActivityIndicator size="large" color="#6B5ECD" />
+          <Text style={styles.loadingText}>Loading student progress...</Text>
         </View>
       </SafeAreaView>
     );
@@ -56,9 +56,11 @@ const StudentProgressScreen = ({ route }) => {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error || 'No progress data'}</Text>
+          <Icon name="exclamation-triangle" size={40} color="#F44336" />
+          <Text style={styles.errorText}>{error || 'No progress data available'}</Text>
           <TouchableOpacity onPress={fetchStudentProgress} style={styles.retryButton}>
-            <Text style={styles.retryText}>Retry</Text>
+            <Icon name="refresh" size={16} color="#FFFFFF" style={styles.retryIcon} />
+            <Text style={styles.retryText}>Try Again</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -69,106 +71,240 @@ const StudentProgressScreen = ({ route }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+      <View style={styles.container}>
+        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Student Progress</Text>
         </View>
 
-        <View style={styles.levelCard}>
-          <View style={styles.levelInfo}>
-            <Text style={styles.levelLabel}>Level</Text>
-            <Text style={styles.levelValue}>{progress.userLevel || 'Beginner'}</Text>
-          </View>
-          <Icon name="trophy" size={30} color="#FFD700" />
-        </View>
-
-        {/* Word Practice */}
-        <View style={styles.statCard}>
-          <View style={styles.statHeader}>
-            <Text style={styles.statTitle}>Word Practice</Text>
-            <Icon name="pencil" size={20} color="#B052F7" />
-          </View>
-          <View style={styles.statsRow}>
-            <View style={styles.stat}>
-              <Text style={styles.statValue}>{p.writing.wordPractice.gamesPlayed}</Text>
-              <Text style={styles.statLabel}>Games</Text>
-            </View>
-            <View style={styles.stat}>
-              <Text style={styles.statValue}>{p.writing.wordPractice.totalWords}</Text>
-              <Text style={styles.statLabel}>Words</Text>
-            </View>
-            <View style={styles.stat}>
-              <Text style={styles.statValue}>{p.writing.wordPractice.correctWords}</Text>
-              <Text style={styles.statLabel}>Correct</Text>
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Level Card */}
+          <View style={styles.levelCard}>
+            <View style={styles.levelContent}>
+              <View style={styles.levelIconContainer}>
+                <Icon name="trophy" size={24} color="#6B5ECD" />
+              </View>
+              <View style={styles.levelInfo}>
+                <Text style={styles.levelLabel}>Current Level</Text>
+                <Text style={styles.levelValue}>{progress.userLevel || 'Beginner'}</Text>
+              </View>
             </View>
           </View>
-          <Text style={styles.accuracyLabel}>Accuracy</Text>
-          <View style={styles.progressBarContainer}>
-            <View
-              style={[
-                styles.progressBar,
-                {
-                  width: `${calculatePercentage(
-                    p.writing.wordPractice.correctWords,
-                    p.writing.wordPractice.totalWords || 1
-                  )}%`,
-                },
-              ]}
-            />
+
+          {/* Progress Cards Section */}
+          <View style={styles.progressSection}>
+            <Text style={styles.sectionTitle}>Practice Areas</Text>
+            
+            {/* Word Practice Card */}
+            <View style={styles.statCard}>
+              <View style={styles.statHeader}>
+                <View style={styles.statTitleContainer}>
+                  <Icon name="pencil" size={18} color="#6B5ECD" style={styles.statIcon} />
+                  <Text style={styles.statTitle}>Word Practice</Text>
+                </View>
+              </View>
+              
+              <View style={styles.statsGrid}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{p.writing.wordPractice.gamesPlayed}</Text>
+                  <Text style={styles.statLabel}>Games Played</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{p.writing.wordPractice.totalWords}</Text>
+                  <Text style={styles.statLabel}>Total Words</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{p.writing.wordPractice.correctWords}</Text>
+                  <Text style={styles.statLabel}>Correct Words</Text>
+                </View>
+              </View>
+              
+              <View style={styles.accuracySection}>
+                <View style={styles.accuracyHeader}>
+                  <Text style={styles.accuracyLabel}>Accuracy Rate</Text>
+                  <Text style={styles.accuracyPercentage}>
+                    {calculatePercentage(
+                      p.writing.wordPractice.correctWords,
+                      p.writing.wordPractice.totalWords || 1
+                    )}%
+                  </Text>
+                </View>
+                <View style={styles.progressBarContainer}>
+                  <View
+                    style={[
+                      styles.progressBar,
+                      {
+                        width: `${calculatePercentage(
+                          p.writing.wordPractice.correctWords,
+                          p.writing.wordPractice.totalWords || 1
+                        )}%`,
+                      },
+                    ]}
+                  />
+                </View>
+              </View>
+            </View>
+
+            {/* Sentence Practice Card */}
+            <View style={styles.statCard}>
+              <View style={styles.statHeader}>
+                <View style={styles.statTitleContainer}>
+                  <Icon name="file-text" size={18} color="#6B5ECD" style={styles.statIcon} />
+                  <Text style={styles.statTitle}>Sentence Practice</Text>
+                </View>
+              </View>
+              
+              <View style={styles.statsGrid}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{p.writing.sentencePractice.gamesPlayed}</Text>
+                  <Text style={styles.statLabel}>Games Played</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{p.writing.sentencePractice.totalSentences}</Text>
+                  <Text style={styles.statLabel}>Total Sentences</Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{p.writing.sentencePractice.correctSentences}</Text>
+                  <Text style={styles.statLabel}>Correct Sentences</Text>
+                </View>
+              </View>
+              
+              <View style={styles.accuracySection}>
+                <View style={styles.accuracyHeader}>
+                  <Text style={styles.accuracyLabel}>Accuracy Rate</Text>
+                  <Text style={styles.accuracyPercentage}>
+                    {calculatePercentage(
+                      p.writing.sentencePractice.correctSentences,
+                      p.writing.sentencePractice.totalSentences || 1
+                    )}%
+                  </Text>
+                </View>
+                <View style={styles.progressBarContainer}>
+                  <View
+                    style={[
+                      styles.progressBar,
+                      {
+                        width: `${calculatePercentage(
+                          p.writing.sentencePractice.correctSentences,
+                          p.writing.sentencePractice.totalSentences || 1
+                        )}%`,
+                      },
+                    ]}
+                  />
+                </View>
+              </View>
+            </View>
+
+            {/* Word Reading Card */}
+            {p.reading?.wordReading && (
+              <View style={styles.statCard}>
+                <View style={styles.statHeader}>
+                  <View style={styles.statTitleContainer}>
+                    <Icon name="volume-up" size={18} color="#6B5ECD" style={styles.statIcon} />
+                    <Text style={styles.statTitle}>Word Reading</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.statsGrid}>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>{p.reading.wordReading.sessionsCompleted || 0}</Text>
+                    <Text style={styles.statLabel}>Sessions</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>{p.reading.wordReading.totalWords || 0}</Text>
+                    <Text style={styles.statLabel}>Total Words</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>{p.reading.wordReading.correctPronunciations || 0}</Text>
+                    <Text style={styles.statLabel}>Correct</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.accuracySection}>
+                  <View style={styles.accuracyHeader}>
+                    <Text style={styles.accuracyLabel}>Accuracy Rate</Text>
+                    <Text style={styles.accuracyPercentage}>
+                      {calculatePercentage(
+                        p.reading.wordReading.correctPronunciations || 0,
+                        p.reading.wordReading.totalWords || 1
+                      )}%
+                    </Text>
+                  </View>
+                  <View style={styles.progressBarContainer}>
+                    <View
+                      style={[
+                        styles.progressBar,
+                        {
+                          width: `${calculatePercentage(
+                            p.reading.wordReading.correctPronunciations || 0,
+                            p.reading.wordReading.totalWords || 1
+                          )}%`,
+                        },
+                      ]}
+                    />
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {/* Sentence Reading Card */}
+            {p.reading?.sentenceReading && (
+              <View style={styles.statCard}>
+                <View style={styles.statHeader}>
+                  <View style={styles.statTitleContainer}>
+                    <Icon name="microphone" size={18} color="#6B5ECD" style={styles.statIcon} />
+                    <Text style={styles.statTitle}>Sentence Reading</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.statsGrid}>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>{p.reading.sentenceReading.sessionsCompleted || 0}</Text>
+                    <Text style={styles.statLabel}>Sessions</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>{p.reading.sentenceReading.totalSentences || 0}</Text>
+                    <Text style={styles.statLabel}>Total Sentences</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>{p.reading.sentenceReading.correctPronunciations || 0}</Text>
+                    <Text style={styles.statLabel}>Correct</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.accuracySection}>
+                  <View style={styles.accuracyHeader}>
+                    <Text style={styles.accuracyLabel}>Accuracy Rate</Text>
+                    <Text style={styles.accuracyPercentage}>
+                      {calculatePercentage(
+                        p.reading.sentenceReading.correctPronunciations || 0,
+                        p.reading.sentenceReading.totalSentences || 1
+                      )}%
+                    </Text>
+                  </View>
+                  <View style={styles.progressBarContainer}>
+                    <View
+                      style={[
+                        styles.progressBar,
+                        {
+                          width: `${calculatePercentage(
+                            p.reading.sentenceReading.correctPronunciations || 0,
+                            p.reading.sentenceReading.totalSentences || 1
+                          )}%`,
+                        },
+                      ]}
+                    />
+                  </View>
+                </View>
+              </View>
+            )}
           </View>
-          <Text style={styles.accuracyValue}>
-            {calculatePercentage(
-              p.writing.wordPractice.correctWords,
-              p.writing.wordPractice.totalWords || 1
-            )}%
-          </Text>
-        </View>
-
-        {/* Add more statCards here for Sentence Practice, Word Reading, Sentence Reading */}
-
-        {/* Sentence Practice */}
-    <View style={styles.statCard}>
-      <View style={styles.statHeader}>
-        <Text style={styles.statTitle}>Sentence Practice</Text>
-        <Icon name="file-text" size={20} color="#B052F7" />
+        </ScrollView>
       </View>
-      <View style={styles.statsRow}>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{p.writing.sentencePractice.gamesPlayed}</Text>
-          <Text style={styles.statLabel}>Games</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{p.writing.sentencePractice.totalSentences}</Text>
-          <Text style={styles.statLabel}>Sentences</Text>
-        </View>
-        <View style={styles.stat}>
-          <Text style={styles.statValue}>{p.writing.sentencePractice.correctSentences}</Text>
-          <Text style={styles.statLabel}>Correct</Text>
-        </View>
-      </View>
-      <Text style={styles.accuracyLabel}>Accuracy</Text>
-      <View style={styles.progressBarContainer}>
-        <View
-          style={[
-            styles.progressBar,
-            {
-              width: `${calculatePercentage(
-                p.writing.sentencePractice.correctSentences,
-                p.writing.sentencePractice.totalSentences || 1
-              )}%`,
-            },
-          ]}
-        />
-      </View>
-      <Text style={styles.accuracyValue}>
-        {calculatePercentage(
-          p.writing.sentencePractice.correctSentences,
-          p.writing.sentencePractice.totalSentences || 1
-        )}%
-      </Text>
-    </View>
-
-      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -176,7 +312,11 @@ const StudentProgressScreen = ({ route }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#FFFFFF',
+  },
+  container: {
+    flex: 1,
+    paddingTop: 50,
   },
   loadingContainer: {
     flex: 1,
@@ -186,127 +326,175 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#666',
+    color: '#666666',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 40,
   },
   errorText: {
     fontSize: 16,
-    color: '#FF6B6B',
+    color: '#666666',
     textAlign: 'center',
-    marginBottom: 20,
+    marginVertical: 20,
+    lineHeight: 24,
   },
   retryButton: {
-    backgroundColor: '#B052F7',
-    paddingHorizontal: 24,
+    backgroundColor: '#6B5ECD',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 8,
   },
+  retryIcon: {
+    marginRight: 8,
+  },
   retryText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 14,
   },
   header: {
-    backgroundColor: '#B052F7',
-    paddingVertical: 16,
-    alignItems: 'center',
-    elevation: 4,
-    marginBottom: 8,
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginTop:10,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: 'white',
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#333333',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 40,
   },
   levelCard: {
-    backgroundColor: 'white',
-    margin: 16,
-    padding: 16,
+    backgroundColor: '#F8F6FF',
     borderRadius: 12,
-    elevation: 2,
+    padding: 20,
+    marginBottom: 32,
+    borderLeftWidth: 4,
+    borderLeftColor: '#6B5ECD',
+  },
+  levelContent: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  levelIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
   },
   levelInfo: {
     flex: 1,
   },
   levelLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#666666',
+    fontWeight: '500',
+    marginBottom: 4,
   },
   levelValue: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#B052F7',
+    fontWeight: '700',
+    color: '#6B5ECD',
     textTransform: 'capitalize',
   },
+  progressSection: {
+    gap: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#333333',
+    marginBottom: 8,
+  },
   statCard: {
-    backgroundColor: 'white',
-    padding: 16,
+    backgroundColor: '#F8F8F8',
     borderRadius: 12,
-    marginBottom: 16,
-    marginHorizontal: 16,
-    elevation: 2,
+    padding: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#6B5ECD',
   },
   statHeader: {
+    marginBottom: 20,
+  },
+  statTitleContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+  },
+  statIcon: {
+    marginRight: 12,
   },
   statTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: '600',
+    color: '#333333',
   },
-  statsRow: {
+  statsGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 20,
   },
-  stat: {
-    alignItems: 'center',
+  statItem: {
     flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 8,
   },
   statValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#B052F7',
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#6B5ECD',
+    marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
-    marginTop: 4,
+    color: '#666666',
+    fontWeight: '500',
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  accuracySection: {
+    marginTop: 8,
+  },
+  accuracyHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
   },
   accuracyLabel: {
     fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
+    color: '#666666',
+    fontWeight: '500',
+  },
+  accuracyPercentage: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#6B5ECD',
   },
   progressBarContainer: {
-    height: 12,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 6,
-    marginBottom: 4,
+    height: 8,
+    backgroundColor: '#E8E8E8',
+    borderRadius: 4,
+    overflow: 'hidden',
   },
   progressBar: {
     height: '100%',
-    backgroundColor: '#B052F7',
-    borderRadius: 6,
-  },
-  accuracyValue: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    textAlign: 'right',
-    color: '#333',
+    backgroundColor: '#6B5ECD',
+    borderRadius: 4,
   },
 });
 

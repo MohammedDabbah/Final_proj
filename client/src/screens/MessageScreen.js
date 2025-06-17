@@ -79,10 +79,17 @@ const MessageScreen = ({ route }) => {
     const isLast = index === messages.length - 1;
     return (
       <View style={[styles.messageBubble, isMe ? styles.myMessage : styles.theirMessage]}>
-        <Text style={styles.messageText}>{item.content}</Text>
-        <Text style={styles.timestamp}>{moment(item.timestamp).format('LT')}</Text>
+        <Text style={[styles.messageText, isMe ? styles.myMessageText : styles.theirMessageText]}>
+          {item.content}
+        </Text>
+        <Text style={[styles.timestamp, isMe ? styles.myTimestamp : styles.theirTimestamp]}>
+          {moment(item.timestamp).format('LT')}
+        </Text>
         {isMe && isLast && item.seen && (
-          <Text style={styles.seenText}>✓ Seen</Text>
+          <View style={styles.seenContainer}>
+            <Icon name="check-circle" size={12} color="#4CAF50" />
+            <Text style={styles.seenText}>Seen</Text>
+          </View>
         )}
       </View>
     );
@@ -92,9 +99,13 @@ const MessageScreen = ({ route }) => {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.centered}>
-          <Text style={{ color: '#B00020', fontSize: 16, textAlign: 'center' }}>
-            Recipient info is missing. Please go back and try again.
-          </Text>
+          <View style={styles.errorContainer}>
+            <Icon name="exclamation-triangle" size={48} color="#6B5ECD" />
+            <Text style={styles.errorTitle}>Connection Issue</Text>
+            <Text style={styles.errorText}>
+              Recipient info is missing. Please go back and try again.
+            </Text>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -107,30 +118,41 @@ const MessageScreen = ({ route }) => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={90}
       >
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          renderItem={renderItem}
-          keyExtractor={(item) => item._id}
-          contentContainerStyle={{ padding: 16 }}
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-        />
+        <View style={styles.chatBackground}>
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            renderItem={renderItem}
+            keyExtractor={(item) => item._id}
+            contentContainerStyle={styles.messagesContainer}
+            onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
 
         <View style={styles.inputContainer}>
-          <TextInput
-            value={content}
-            onChangeText={setContent}
-            placeholder="Type a message..."
-            style={styles.input}
-            multiline
-          />
-          <TouchableOpacity
-            onPress={sendMessage}
-            style={[styles.sendButton, sending && { opacity: 0.5 }]}
-            disabled={sending}
-          >
-            <Icon name="send" size={18} color="#fff" />
-          </TouchableOpacity>
+          <View style={styles.inputWrapper}>
+            <TextInput
+              value={content}
+              onChangeText={setContent}
+              placeholder="Type a message..."
+              placeholderTextColor="#9CA3AF"
+              style={styles.input}
+              multiline
+              maxLength={500}
+            />
+            <TouchableOpacity
+              onPress={sendMessage}
+              style={[styles.sendButton, sending && styles.sendButtonDisabled]}
+              disabled={sending}
+            >
+              {sending ? (
+                <Icon name="clock-o" size={18} color="#FFFFFF" />
+              ) : (
+                <Icon name="send" size={16} color="#FFFFFF" />
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -140,66 +162,160 @@ const MessageScreen = ({ route }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#6B5ECD',
   },
   container: {
     flex: 1,
+    backgroundColor: '#F8F9FA',
+  },
+  chatBackground: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  errorContainer: {
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 32,
+    shadowColor: '#6B5ECD',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  messagesContainer: {
+    padding: 20,
+    paddingBottom: 100,
   },
   messageBubble: {
-    padding: 10,
-    borderRadius: 10,
+    borderRadius: 20,
     marginVertical: 4,
     maxWidth: '80%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   myMessage: {
-    backgroundColor: '#B052F7',
+    backgroundColor: '#6B5ECD',
     alignSelf: 'flex-end',
+    marginLeft: 60,
+    borderBottomRightRadius: 6,
+    padding: 16,
   },
   theirMessage: {
-    backgroundColor: '#7D8587',
+    backgroundColor: '#FFFFFF',
     alignSelf: 'flex-start',
+    marginRight: 60,
+    borderBottomLeftRadius: 6,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   messageText: {
-    color: '#fff',
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: '500',
+  },
+  myMessageText: {
+    color: '#FFFFFF',
+  },
+  theirMessageText: {
+    color: '#1F2937',
   },
   timestamp: {
-    fontSize: 10,
-    color: '#eee',
-    marginTop: 4,
+    fontSize: 12,
+    marginTop: 8,
+    fontWeight: '500',
+  },
+  myTimestamp: {
+    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'right',
+  },
+  theirTimestamp: {
+    color: '#9CA3AF',
+    textAlign: 'left',
+  },
+  seenContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    justifyContent: 'flex-end',
   },
   seenText: {
-    fontSize: 10,
-    color: '#ccc',
-    marginTop: 2,
-    textAlign: 'right',
+    fontSize: 12,
+    color: '#4CAF50',
+    marginLeft: 4,
+    fontWeight: '600',
   },
   inputContainer: {
-    flexDirection: 'row',
-    padding: 12,
-    backgroundColor: '#fff',
-    borderTopColor: '#ddd',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 25,
+    paddingHorizontal: 4,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   input: {
     flex: 1,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 20,
-    paddingHorizontal: 16,
     fontSize: 16,
-    marginRight: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    maxHeight: 100,
+    color: '#1F2937',
+    fontWeight: '500',
   },
   sendButton: {
-    backgroundColor: '#B052F7',
+    backgroundColor: '#6B5ECD',
     borderRadius: 20,
-    padding: 10,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+    marginLeft: 8,
+    shadowColor: '#6B5ECD',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  sendButtonDisabled: {
+    backgroundColor: '#9CA3AF',
+    shadowOpacity: 0.1,
   },
 });
 

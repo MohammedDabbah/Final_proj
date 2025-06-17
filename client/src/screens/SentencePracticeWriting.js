@@ -12,8 +12,9 @@ import {
 import aiApi from "../../api/aiApi";
 import serverApi from "../../api/serverApi";
 const { width } = Dimensions.get('window');
-import Icon from 'react-native-vector-icons/Feather'; // Assuming you already have this
+import Icon from 'react-native-vector-icons/Feather';
 import { AuthContext } from '../../Auth/AuthContext';
+
 const removePunctuation = (sentence) => {
   return sentence.replace(/[.,!?;:()'"-]/g, '').trim().toLowerCase();
 };
@@ -229,7 +230,7 @@ const SentencePuzzleGame = () => {
       if (newAttempts >= 3) {
         // Used all attempts - show correct answer and move on
         Alert.alert("Out of attempts", `The correct sentence was:"${currentSentence}"`);
-                moveToNextSentence();
+        moveToNextSentence();
       } else {
         // Provide hint based on current arrangement
         provideHint(userSentence, currentSentence);
@@ -244,19 +245,20 @@ const SentencePuzzleGame = () => {
     if (nextIndex >= 10) {
       // Round completed
       // Calculate stats for progress tracking
-    const correctSentences = Math.floor(score / 4); // Adjust based on your scoring logic
-    const gameStats = {
-      totalSentences: 10,
-      correctSentences: correctSentences,
-      score: score
-    };
-    
-    // Update progress
-    updateProgress(gameStats);
-    
+      const correctSentences = Math.floor(score / 4); // Adjust based on your scoring logic
+      const gameStats = {
+        totalSentences: 10,
+        correctSentences: correctSentences,
+        score: score
+      };
+      
+      // Update progress
+      updateProgress(gameStats);
+      
       Alert.alert(
         "Round Completed!", 
-`You've completed round ${round} with a score of ${score}.\n\nWould you like to play another round?`        [
+        `You have completed round ${round} with a score of ${score}.\n\nWould you like to play another round?`,
+        [
           { 
             text: "Yes", 
             onPress: async () => {
@@ -307,7 +309,7 @@ const SentencePuzzleGame = () => {
     }
     
     if (hintMessage === "") {
-      hintMessage = "Check the word order. Something isn't right.";
+      hintMessage = "Check the word order. Something is not right.";
     }
     
     Alert.alert(`Attempt ${attempts + 1}/3`, hintMessage);
@@ -352,17 +354,19 @@ const SentencePuzzleGame = () => {
 const renderInitScreen = () => (
   <View style={styles.contentContainer}>
     <View style={styles.logoContainer}>
-      <Icon name="book-open" size={50} color="#B052F7" />
+      <Icon name="book-open" size={40} color="#6B5ECD" />
     </View>
     <Text style={styles.welcomeTitle}>Sentence Memory Game</Text>
     <Text style={styles.instructions}>
       Memorize the sentence that appears, then recreate it from the word bank.
-      Each round has 10 sentences.
-      You have 3 attempts for each sentence.
+      Each round has 10 sentences with 3 attempts each.
     </Text>
-    <TouchableOpacity style={styles.startButton} onPress={startGame}>
+    <TouchableOpacity 
+      style={styles.startButton} 
+      onPress={startGame}
+      activeOpacity={0.8}
+    >
       <Text style={styles.startButtonText}>Start Game</Text>
-      <Icon name="play" size={20} color="white" style={styles.buttonIcon} />
     </TouchableOpacity>
   </View>
 );
@@ -376,41 +380,39 @@ const renderCountdown = () => (
 
 const renderShowingSentence = () => (
   <View style={styles.contentContainer}>
-    <Text style={styles.timeLeftText}>{timeLeft}s</Text>
+    <Text style={styles.timeLeftText}>{timeLeft}s remaining</Text>
     <Animated.View style={[styles.sentenceCard, { opacity: fadeAnimation }]}>
       <Text style={styles.sentence}>{currentSentence}</Text>
     </Animated.View>
-    <Text style={styles.memorizeText}>
-      <Icon name="eye" size={18} color="#B052F7" style={{marginRight: 8}} />
-      Memorize this sentence!
-    </Text>
+    <Text style={styles.memorizeText}>Memorize this sentence!</Text>
   </View>
 );
 
 const renderArrangingWords = () => (
   <View style={styles.contentContainer}>
     {/* Area for arranged words */}
-    <Text style={styles.sectionLabel}>
-      <Icon name="edit-2" size={16} color="#666" /> Arrange the sentence:
-    </Text>
+    <Text style={styles.sectionLabel}>Your sentence:</Text>
     <View style={styles.arrangedArea}>
       <View style={styles.wordContainer}>
-        {arrangedWords.map((word) => (
-          <TouchableOpacity
-            key={word.id}
-            style={styles.arrangedWord}
-            onPress={() => moveWordToBank(word)}
-          >
-            <Text style={styles.wordText}>{word.text}</Text>
-          </TouchableOpacity>
-        ))}
+        {arrangedWords.length === 0 ? (
+          <Text style={styles.placeholderText}>Tap words below to build your sentence</Text>
+        ) : (
+          arrangedWords.map((word) => (
+            <TouchableOpacity
+              key={word.id}
+              style={styles.arrangedWord}
+              onPress={() => moveWordToBank(word)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.wordText}>{word.text}</Text>
+            </TouchableOpacity>
+          ))
+        )}
       </View>
     </View>
 
     {/* Word bank area */}
-    <Text style={styles.sectionLabel}>
-      <Icon name="list" size={16} color="#666" /> Word Bank:
-    </Text>
+    <Text style={styles.sectionLabel}>Available words:</Text>
     <View style={styles.wordBankArea}>
       <View style={styles.wordContainer}>
         {wordBank.map((word) => (
@@ -418,6 +420,7 @@ const renderArrangingWords = () => (
             key={word.id}
             style={styles.bankWord}
             onPress={() => moveWordToArranged(word)}
+            activeOpacity={0.7}
           >
             <Text style={styles.wordText}>{word.text}</Text>
           </TouchableOpacity>
@@ -427,32 +430,50 @@ const renderArrangingWords = () => (
     
     {/* Action buttons */}
     <View style={styles.buttonContainer}>
-    <TouchableOpacity
-  style={[
-    styles.primaryButton, 
-    arrangedWords.length === 0 && styles.disabledButton
-  ]}
-  onPress={handleCheckSentence}
-  disabled={arrangedWords.length === 0}
->
-  <Text style={styles.primaryButtonText}>Check</Text>
-  <Icon name="check" size={16} color="white" style={styles.buttonIcon} />
-</TouchableOpacity>
+      <TouchableOpacity
+        style={styles.secondaryButton}
+        onPress={() => {
+          setArrangedWords([]);
+          setWordBank(currentSentence.split(' ').map(word => ({
+            text: word,
+            id: Math.random().toString(),
+          })).sort(() => Math.random() - 0.5));
+        }}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.secondaryButtonText}>Reset</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity
+        style={[
+          styles.primaryButton, 
+          arrangedWords.length === 0 && styles.disabledButton
+        ]}
+        onPress={handleCheckSentence}
+        disabled={arrangedWords.length === 0}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.primaryButtonText}>Submit</Text>
+      </TouchableOpacity>
     </View>
   </View>
 );
 
 const renderCompletedScreen = () => (
   <View style={styles.contentContainer}>
-    <View style={styles.completedIconContainer}>
-      <Icon name="award" size={80} color="#B052F7" />
+    <View style={styles.completedContainer}>
+      <Icon name="award" size={60} color="#6B5ECD" />
+      <Text style={styles.completedTitle}>Game Complete!</Text>
+      <Text style={styles.completedScore}>Final Score: {score}</Text>
+      <Text style={styles.completedRound}>Rounds: {round}</Text>
     </View>
-    <Text style={styles.completedTitle}>Game Completed!</Text>
-    <Text style={styles.completedScore}>Final Score: {score}</Text>
-    <Text style={styles.completedRound}>Rounds Completed: {round}</Text>
-    <TouchableOpacity style={styles.startButton} onPress={startGame}>
+    
+    <TouchableOpacity 
+      style={styles.startButton} 
+      onPress={startGame}
+      activeOpacity={0.8}
+    >
       <Text style={styles.startButtonText}>Play Again</Text>
-      <Icon name="refresh-cw" size={20} color="white" style={styles.buttonIcon} />
     </TouchableOpacity>
   </View>
 );
@@ -460,43 +481,37 @@ const renderCompletedScreen = () => (
 return (
   <SafeAreaView style={styles.safeArea}>
     <View style={styles.container}>
-      {/* Header with game info */}
+      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Sentence Memory Game</Text>
       </View>
       
-      {/* Game info area */}
-      <View style={styles.infoCard}>
-      <View style={styles.infoRow}>
-  <View style={styles.infoItem}>
-    <Icon name="flag" size={16} color="#B052F7" />
-    <Text style={styles.infoLabel}>Round</Text>
-    <Text style={styles.infoValue}>{round}</Text>
-  </View>
-  
-  <View style={styles.infoItem}>
-    <Icon name="book-open" size={16} color="#B052F7" />
-    <Text style={styles.infoLabel}>Sentence</Text>
-    <Text style={styles.infoValue}>{sentenceIndex + 1}/10</Text>
-  </View>
-  
-  {gameState === 'arranging' && (
-    <View style={styles.infoItem}>
-      <Icon name="repeat" size={16} color="#B052F7" />
-      <Text style={styles.infoLabel}>Attempt</Text>
-      <Text style={styles.infoValue}>{attempts + 1}/3</Text>
-    </View>
-  )}
-  
-  <View style={styles.infoItem}>
-    <Icon name="star" size={16} color="#B052F7" />
-    <Text style={styles.infoLabel}>Score</Text>
-    <Text style={styles.infoValue}>{score}</Text>
-  </View>
-</View>
+      {/* Stats */}
+      <View style={styles.statsContainer}>
+        <View style={styles.statItem}>
+          <Text style={styles.statLabel}>Round</Text>
+          <Text style={styles.statValue}>{round}</Text>
+        </View>
+        
+        <View style={styles.statItem}>
+          <Text style={styles.statLabel}>Sentence</Text>
+          <Text style={styles.statValue}>{sentenceIndex + 1}/10</Text>
+        </View>
+        
+        {gameState === 'arranging' && (
+          <View style={styles.statItem}>
+            <Text style={styles.statLabel}>Attempt</Text>
+            <Text style={styles.statValue}>{attempts + 1}/3</Text>
+          </View>
+        )}
+        
+        <View style={styles.statItem}>
+          <Text style={styles.statLabel}>Score</Text>
+          <Text style={styles.statValue}>{score}</Text>
+        </View>
       </View>
       
-      {/* Dynamic content based on game state */}
+      {/* Content */}
       {gameState === 'init' && renderInitScreen()}
       {gameState === 'countdown' && renderCountdown()}
       {gameState === 'showing' && renderShowingSentence()}
@@ -510,186 +525,148 @@ return (
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8F8FF',
+    backgroundColor: '#FFFFFF',
   },
   container: {
     flex: 1,
+    paddingTop: 50,
   },
   header: {
-    backgroundColor: '#B052F7',
-    paddingVertical: 20,
     alignItems: 'center',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    textAlign: 'center',
+    fontWeight: '700',
+    color: '#6B5ECD',
   },
-  infoCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 15,
-    margin: 16,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  infoRow: {
+  statsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  statItem: {
     alignItems: 'center',
   },
-  infoItem: {
-    alignItems: 'center',
-    padding: 10,
+  statLabel: {
+    fontSize: 13,
+    color: '#666666',
+    fontWeight: '500',
+    marginBottom: 4,
   },
-  infoLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 4,
-  },
-  infoValue: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+  statValue: {
+    fontSize: 18,
+    color: '#6B5ECD',
+    fontWeight: '700',
   },
   contentContainer: {
     flex: 1,
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    padding: 24,
+    justifyContent: 'center',
   },
   logoContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(176, 82, 247, 0.1)',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F8F6FF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
+    alignSelf: 'center',
+    marginBottom: 32,
   },
   welcomeTitle: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: '700',
+    color: '#333333',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
   },
   instructions: {
     fontSize: 16,
-    color: '#555',
+    color: '#666666',
     textAlign: 'center',
-    marginBottom: 40,
     lineHeight: 24,
+    marginBottom: 40,
   },
   startButton: {
-    width: '80%',
-    height: 56,
-    borderRadius: 12,
-    backgroundColor: '#B052F7',
-    flexDirection: 'row',
-    justifyContent: 'center',
+    backgroundColor: '#6B5ECD',
+    paddingVertical: 16,
+    borderRadius: 8,
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    marginHorizontal: 24,
   },
   startButtonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  buttonIcon: {
-    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   countdownText: {
-    fontSize: 80,
-    fontWeight: 'bold',
-    color: '#B052F7',
+    fontSize: 72,
+    fontWeight: '700',
+    color: '#6B5ECD',
+    textAlign: 'center',
   },
   countdownLabel: {
-    fontSize: 22,
-    color: '#333',
-    marginTop: 12,
+    fontSize: 20,
+    color: '#666666',
+    textAlign: 'center',
+    marginTop: 16,
   },
   timeLeftText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#B052F7',
-    marginBottom: 16,
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#6B5ECD',
+    textAlign: 'center',
+    marginBottom: 20,
   },
   sentenceCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    marginVertical: 24,
-    width: '90%',
-    minHeight: 100,
+    backgroundColor: '#F8F6FF',
+    borderRadius: 12,
+    padding: 24,
+    marginVertical: 20,
+    minHeight: 120,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
   },
   sentence: {
-    fontSize: 20,
-    lineHeight: 30,
+    fontSize: 18,
+    lineHeight: 28,
     textAlign: 'center',
-    color: '#333',
+    color: '#333333',
     fontWeight: '500',
   },
   memorizeText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#B052F7',
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#666666',
+    textAlign: 'center',
     marginTop: 16,
   },
   sectionLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#666',
-    alignSelf: 'flex-start',
-    marginLeft: 20,
-    marginBottom: 8,
+    color: '#666666',
+    marginBottom: 12,
   },
   arrangedArea: {
-    backgroundColor: 'white',
-    borderRadius: 16,
+    backgroundColor: '#F8F8F8',
+    borderRadius: 8,
     padding: 16,
-    width: '90%',
-    minHeight: 100,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    minHeight: 80,
+    marginBottom: 24,
   },
   wordBankArea: {
-    backgroundColor: 'white',
-    borderRadius: 16,
+    backgroundColor: '#F8F8F8',
+    borderRadius: 8,
     padding: 16,
-    width: '90%',
-    minHeight: 120,
-    marginVertical: 16,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    minHeight: 100,
+    marginBottom: 24,
   },
   wordContainer: {
     flexDirection: 'row',
@@ -697,90 +674,82 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  placeholderText: {
+    color: '#999999',
+    fontSize: 14,
+    fontStyle: 'italic',
+    textAlign: 'center',
+  },
   bankWord: {
-    backgroundColor: '#B052F7',
+    backgroundColor: '#6B5ECD',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 12,
-    margin: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    borderRadius: 6,
+    margin: 4,
   },
   arrangedWord: {
-    backgroundColor: '#B052F7',
+    backgroundColor: '#6B5ECD',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 12,
-    margin: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    borderRadius: 6,
+    margin: 4,
   },
   wordText: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '500',
+    fontSize: 15,
   },
   buttonContainer: {
-    width: '90%',
-    marginTop: 16,
+    flexDirection: 'row',
+    gap: 12,
   },
   primaryButton: {
-    height: 56,
-    borderRadius: 12,
-    backgroundColor: '#B052F7',
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flex: 1,
+    backgroundColor: '#6B5ECD',
+    paddingVertical: 16,
+    borderRadius: 8,
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
   },
   primaryButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    flex: 1,
+    backgroundColor: '#F8F8F8',
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  secondaryButtonText: {
+    color: '#666666',
+    fontSize: 16,
+    fontWeight: '500',
   },
   disabledButton: {
-    backgroundColor: '#D0D0D0',
-    opacity: 0.7,
+    backgroundColor: '#E0E0E0',
   },
-  completedIconContainer: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: 'rgba(176, 82, 247, 0.1)',
-    justifyContent: 'center',
+  completedContainer: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 40,
   },
   completedTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 24,
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#333333',
+    marginTop: 16,
+    marginBottom: 8,
   },
   completedScore: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
+    color: '#6B5ECD',
+    marginBottom: 4,
   },
   completedRound: {
-    fontSize: 18,
-    color: '#666',
-    marginBottom: 40,
+    fontSize: 16,
+    color: '#666666',
   },
 });   
 

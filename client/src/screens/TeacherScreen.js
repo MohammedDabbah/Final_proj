@@ -6,18 +6,11 @@ import { AuthContext } from '../../Auth/AuthContext';
 const { width } = Dimensions.get('window');
 
 const teacherCardData = [
-  // {
-  //   title: 'My Students',
-  //   subtitle: 'Manage and support your learners',
-  //   icon: 'users',
-  //   bgColor: '#6B5ECD',
-  //   screen: 'MyStudentsScreen',
-  // },
   {
     title: 'Activity Manager',
     subtitle: 'Design quizzes and writing tasks',
     icon: 'plus-circle',
-    bgColor: '#FF6B81',
+    bgColor: '#6B5ECD', // Changed to your brand color
     screen: 'ActivityManagerScreen',
   },
   {
@@ -27,13 +20,6 @@ const teacherCardData = [
     bgColor: '#4CAF50',
     screen: 'EvaluatePicker',
   },
-//   {
-//     title: 'Performance',
-//     subtitle: 'Track progress over time',
-//     icon: 'line-chart',
-//     bgColor: '#FFA500',
-//     screen: 'PerformanceScreen',
-//   },
 ];
 
 const TeacherScreen = ({ navigation }) => {
@@ -63,52 +49,86 @@ const TeacherScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      {/* Enhanced Header */}
       <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
-        <Text style={styles.greetingText}>
-          Hello, <Text style={styles.nameText}>{user?.FName || 'Teacher'}</Text>
-        </Text>
-        <Text style={styles.subGreeting}>Ready to inspire minds today?</Text>
+        <View style={styles.headerCard}>
+          <View style={styles.headerContent}>
+            <View style={styles.avatarContainer}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>
+                  {(user?.FName || 'T').charAt(0).toUpperCase()}
+                </Text>
+              </View>
+              <View style={styles.teacherBadge}>
+                <Icon name="graduation-cap" size={12} color="#FFFFFF" />
+              </View>
+            </View>
+            <Text style={styles.greetingText}>
+              Hello, <Text style={styles.nameText}>{user?.FName || 'Teacher'}</Text>
+            </Text>
+          </View>
+        </View>
       </Animated.View>
 
+      {/* Enhanced Cards Container */}
       <View style={styles.cardsContainer}>
         {teacherCardData.map((item, index) => (
-          <TouchableOpacity
+          <Animated.View
             key={index}
-            style={[styles.card, { backgroundColor: item.bgColor }]}
-            onPress={() => navigation.navigate(item.screen)}
+            style={{
+              opacity: fadeAnim,
+              transform: [{ scale: scaleAnim }],
+            }}
           >
-            <Icon name={item.icon} size={28} color="#fff" style={styles.cardIcon} />
-            <Text style={styles.cardTitle}>{item.title}</Text>
-            <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.card, { backgroundColor: item.bgColor }]}
+              onPress={() => navigation.navigate(item.screen)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.cardHeader}>
+                <View style={styles.cardIconContainer}>
+                  <Icon name={item.icon} size={28} color="#fff" />
+                </View>
+                <View style={styles.cardArrow}>
+                  <Icon name="arrow-right" size={16} color="rgba(255,255,255,0.8)" />
+                </View>
+              </View>
+              <View style={styles.cardContent}>
+                <Text style={styles.cardTitle}>{item.title}</Text>
+                <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
+              </View>
+            </TouchableOpacity>
+          </Animated.View>
         ))}
       </View>
 
-      {/* ✅ Bottom Navigation */}
-            <Animated.View style={[styles.bottomNav, { opacity: fadeAnim }]}>
+      {/* Enhanced Bottom Navigation */}
+      <Animated.View style={[styles.bottomNav, { opacity: fadeAnim }]}>
         {[
-            { name: 'FollowList', icon: 'user-plus', type: 'user' },
-            { name: 'Messages', icon: 'envelope' },
-            { name: 'PerformanceScreen', icon: 'line-chart' },
-            { name: 'Profile', icon: 'user' },
+          { name: 'FollowList', icon: 'user-plus', type: 'user', displayName: 'Students' },
+          { name: 'Messages', icon: 'envelope', displayName: 'Messages' },
+          { name: 'PerformanceScreen', icon: 'line-chart', displayName: 'Analytics' },
+          { name: 'Profile', icon: 'user', displayName: 'Profile' },
         ].map((item, index) => (
-            <TouchableOpacity
+          <TouchableOpacity
             key={index}
             style={styles.navItem}
             onPress={() => {
-                if (item.name === 'FollowList') {
+              if (item.name === 'FollowList') {
                 navigation.navigate(item.name, { type: item.type });
-                } else {
+              } else {
                 navigation.navigate(item.name);
-                }
+              }
             }}
-            >
-            <Icon name={item.icon} size={24} color="#B052F7" />
-            <Text style={styles.navText}>{item.name.replace('Screen', '')}</Text>
-            </TouchableOpacity>
+            activeOpacity={0.7}
+          >
+            <View style={styles.navIconContainer}>
+              <Icon name={item.icon} size={20} color="#6B5ECD" />
+            </View>
+            <Text style={styles.navText}>{item.displayName}</Text>
+          </TouchableOpacity>
         ))}
-        </Animated.View>
-
+      </Animated.View>
     </View>
   );
 };
@@ -116,73 +136,176 @@ const TeacherScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F6FF',
-    paddingHorizontal: 20,
-    paddingTop: 40,
+    backgroundColor: '#F8F9FA',
   },
+
+  // Enhanced Header
   header: {
-    marginBottom: 20,
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+  },
+  headerCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    shadowColor: '#6B5ECD',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+    borderWidth: 2,
+    borderColor: '#F0EBFF',
+  },
+  headerContent: {
+    alignItems: 'center',
+  },
+  avatarContainer: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  avatar: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: '#6B5ECD',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#6B5ECD',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  avatarText: {
+    color: '#FFFFFF',
+    fontSize: 28,
+    fontWeight: '700',
+  },
+  teacherBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#4CAF50',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
   },
   greetingText: {
-    fontSize: 26,
-    color: '#000',
+    fontSize: 24,
+    color: '#111827',
     fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  nameText: {
+    color: '#6B5ECD',
+    fontWeight: '700',
   },
   subGreeting: {
     fontSize: 16,
-    color: '#666',
-    marginTop: 5,
+    color: '#6B7280',
+    textAlign: 'center',
+    fontWeight: '500',
   },
-  nameText: {
-    color: '#B052F7',
-    fontWeight: 'bold',
-  },
+
+  // Enhanced Cards Container
   cardsContainer: {
     flex: 1,
+    paddingHorizontal: 20,
     marginTop: 10,
-    marginBottom: 80, // Add margin so bottom nav doesn't overlap
+    marginBottom: 100,
   },
   card: {
-    padding: 20,
-    borderRadius: 15,
-    marginBottom: 15,
+    borderRadius: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    overflow: 'hidden',
   },
-  cardIcon: {
-    marginBottom: 10,
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    paddingBottom: 0,
+  },
+  cardIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardArrow: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardContent: {
+    padding: 20,
   },
   cardTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 4,
   },
   cardSubtitle: {
-    color: '#f0f0f0',
-    marginTop: 5,
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: 14,
+    fontWeight: '500',
   },
+
+  // Enhanced Bottom Navigation
   bottomNav: {
     position: 'absolute',
-    bottom: 20,
-    left: 10,
-    right: 10,
+    bottom: 30,
+    left: 20,
+    right: 20,
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingVertical: 10,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    paddingVertical: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    shadowColor: '#6B5ECD',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 12,
+    borderWidth: 2,
+    borderColor: '#F0EBFF',
   },
   navItem: {
     alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  navIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#F0EBFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
   },
   navText: {
     fontSize: 12,
-    color: '#666',
-    marginTop: 5,
+    color: '#6B5ECD',
+    fontWeight: '600',
   },
 });
 

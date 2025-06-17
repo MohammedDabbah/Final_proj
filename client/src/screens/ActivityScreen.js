@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  SafeAreaView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { Audio } from 'expo-av';
@@ -34,8 +35,6 @@ const ActivityScreen = () => {
     };
     requestPermission();
     }, []);
-
-
 
   // Fetch activities on mount
   useEffect(() => {
@@ -87,7 +86,6 @@ const ActivityScreen = () => {
     Alert.alert("Error", `Could not start recording: ${error.message}`);
   }
 };
-
 
 const stopRecording = async () => {
   try {
@@ -160,7 +158,6 @@ const sendAudioToAI = async (uri) => {
   }
 };
 
-
   // ========================
   // UI + Logic Helpers
   // ========================
@@ -199,7 +196,6 @@ const sendAudioToAI = async (uri) => {
   }
 };
 
-
   const shouldDisableNext = () => {
     const skill = currentActivity.skill;
     const val = answers[currentActivity._id]?.[currentTaskIndex];
@@ -211,23 +207,49 @@ const sendAudioToAI = async (uri) => {
   // ========================
 
   const renderActivityList = () => (
-    activities.length === 0 ? (
-      <Text style={styles.noTasks}>No tasks assigned yet.</Text>
-    ) : (
-      activities.map((activity) => (
-        <TouchableOpacity
-          key={activity._id}
-          style={styles.mainCard}
-          onPress={() => setCurrentActivity(activity)}
-        >
-          <View style={styles.iconCircle}>
-            <Icon name="book" size={20} color="#fff" />
-          </View>
-          <Text style={styles.mainCardTitle}>{activity.title}</Text>
-          <Text style={styles.descriptionText}>{activity.description}</Text>
-        </TouchableOpacity>
-      ))
-    )
+    <View style={styles.activitiesContainer}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>My Activities</Text>
+      </View>
+      
+      {activities.length === 0 ? (
+        <View style={styles.emptyState}>
+          <Icon name="book" size={40} color="#CCCCCC" />
+          <Text style={styles.emptyStateText}>No activities assigned yet</Text>
+          <Text style={styles.emptyStateSubtext}>Check back later for new assignments</Text>
+        </View>
+      ) : (
+        <View style={styles.activitiesList}>
+          {activities.map((activity) => (
+            <TouchableOpacity
+              key={activity._id}
+              style={styles.activityCard}
+              onPress={() => setCurrentActivity(activity)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.activityIconContainer}>
+                <Icon name="book" size={20} color="#6B5ECD" />
+              </View>
+              <View style={styles.activityContent}>
+                <Text style={styles.activityTitle}>{activity.title}</Text>
+                <Text style={styles.activityDescription}>{activity.description}</Text>
+                <View style={styles.activityMeta}>
+                  <View style={styles.activityBadge}>
+                    <Text style={styles.activityBadgeText}>
+                      {activity.type === 'word' ? 'Word Practice' : 'Sentence Practice'}
+                    </Text>
+                  </View>
+                  <Text style={styles.activityTaskCount}>
+                    {activity.tasks?.length || 0} tasks
+                  </Text>
+                </View>
+              </View>
+              <Icon name="chevron-right" size={16} color="#CCCCCC" />
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
   );
 
    useEffect(() => {
@@ -242,378 +264,637 @@ const sendAudioToAI = async (uri) => {
     const activityId = currentActivity._id;
     const isSubmitted = currentActivity.alreadySubmitted;
 
+    if (isSubmitted) {
+      return (
+        <View style={styles.taskContainer}>
+          <View style={styles.taskHeader}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => {
+                setCurrentActivity(null);
+                setCurrentTaskIndex(0);
+              }}
+              activeOpacity={0.8}
+            >
+              <Icon name="arrow-left" size={16} color="#6B5ECD" />
+            </TouchableOpacity>
+            <Text style={styles.taskHeaderTitle}>Completed Activity</Text>
+            <View style={styles.placeholder} />
+          </View>
 
-if (isSubmitted) {
+          <ScrollView style={styles.feedbackContainer}>
+            {currentActivity.tasks.map((task, index) => (
+              <View key={index} style={styles.feedbackCard}>
+                <Text style={styles.feedbackTaskNumber}>Task {index + 1}</Text>
+                <Text style={styles.feedbackPrompt}>{task.prompt}</Text>
+
+                <View style={styles.feedbackSection}>
+                  <Text style={styles.feedbackLabel}>Your Answer:</Text>
+                  <Text style={styles.feedbackAnswer}>
+                    {currentActivity.responses?.[index] || 'No answer provided'}
+                  </Text>
+                </View>
+
+                <View style={styles.feedbackSection}>
+                  <Text style={styles.feedbackLabel}>Feedback:</Text>
+                  <Text style={styles.feedbackText}>
+                    {currentActivity.feedback?.[index] || 'No feedback available yet'}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      );
+    }
+
     return (
-      <>
-      {currentActivity.tasks.map((task, index) => (
-        <View key={index} style={styles.taskCard}>
-          <Text style={styles.taskPrompt}>Task {index + 1}: {task.prompt}</Text>
-
-          <Text style={{ marginTop: 10, fontWeight: 'bold' }}>Your answer:</Text>
-          <Text style={{ color: '#333' }}>
-            {currentActivity.responses?.[index] || '—'}
-          </Text>
-
-          <Text style={{ marginTop: 10, fontWeight: 'bold' }}>Feedback:</Text>
-          <Text style={{ color: '#666' }}>
-            {currentActivity.feedback?.[index] || 'No feedback yet.'}
-          </Text>
-        </View>
-      ))}
-
-      <TouchableOpacity
-            style={[styles.sideButton, styles.skipButton,{marginLeft:'20',marginBottom:'20'}]}
+      <View style={styles.taskContainer}>
+        <View style={styles.taskHeader}>
+          <TouchableOpacity 
+            style={styles.backButton}
             onPress={() => {
               setCurrentActivity(null);
               setCurrentTaskIndex(0);
             }}
+            activeOpacity={0.8}
           >
-            <Text style={styles.buttonText}>Back to Activities</Text>
+            <Icon name="arrow-left" size={16} color="#6B5ECD" />
           </TouchableOpacity>
-            </>
-    );
-  }
-
-  return (
-    <View style={styles.descriptionContainer}>
-      <Text style={styles.descriptionTitle}>
-        Task {currentTaskIndex + 1} of {currentActivity.tasks.length}
-      </Text>
-
-      <View style={styles.taskCard}>
-        <Text style={styles.taskPrompt}>{task.prompt}</Text>
-
-        {currentActivity.skill === 'writing' && (
-          <TextInput
-            style={styles.answerInput}
-            placeholder="Your answer"
-            value={answers[activityId]?.[currentTaskIndex] || ''}
-            onChangeText={(text) => handleInputChange(activityId, currentTaskIndex, text)}
-          />
-        )}
-      </View>
-
-      {currentActivity.type === 'word' && (
-        <View style={{ marginTop: 10, padding: 10, backgroundColor: '#f4f4f4', borderRadius: 8 }}>
-          <Text style={{ fontWeight: '600', marginBottom: 6 }}>Definition:</Text>
-          <Text>{task.expectedAnswer || '—'}</Text>
+          <Text style={styles.taskHeaderTitle}>{currentActivity.title}</Text>
+          <View style={styles.placeholder} />
         </View>
-      )}
 
-      {currentActivity.skill === 'reading' && (
-        <>
-          <View style={{
-            backgroundColor: '#F4F4F4',
-            borderRadius: 12,
-            padding: 12,
-            marginTop: 12,
-          }}>
-            <Text style={{ fontWeight: 'bold', marginBottom: 4 }}>AI Transcription</Text>
-            <Text style={{ color: '#555' }}>
-              {answers[activityId]?.[currentTaskIndex] || 'No transcription yet.'}
-            </Text>
+        <View style={styles.progressContainer}>
+          <Text style={styles.progressText}>
+            Task {currentTaskIndex + 1} of {currentActivity.tasks.length}
+          </Text>
+          <View style={styles.progressBar}>
+            <View 
+              style={[
+                styles.progressFill, 
+                { width: `${((currentTaskIndex + 1) / currentActivity.tasks.length) * 100}%` }
+              ]} 
+            />
+          </View>
+        </View>
+
+        <ScrollView style={styles.taskContent}>
+          <View style={styles.taskPromptCard}>
+            <Text style={styles.taskPromptLabel}>Task Prompt</Text>
+            <Text style={styles.taskPromptText}>{task.prompt}</Text>
           </View>
 
-          <View style={{ marginTop: 30 }}>
-            <View style={styles.sideBySideButtons}>
-              <TouchableOpacity
-                style={[styles.sideButton, isRecording ? styles.stopRecordButton : styles.recordButton]}
-                onPress={isRecording ? stopRecording : startRecording}
-              >
-                <Text style={styles.buttonText}>
-                  {isRecording ? 'Stop Recording' : 'Start Recording'}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.sideButton, { backgroundColor: 'red' }]}
-                onPress={deleteRecording}
-              >
-                <Text style={styles.audioButtonText}>Delete</Text>
-                <Icon name="trash" size={16} color="#fff" style={styles.buttonIcon} />
-              </TouchableOpacity>
+          {currentActivity.type === 'word' && task.expectedAnswer && (
+            <View style={styles.definitionCard}>
+              <Text style={styles.definitionLabel}>Definition</Text>
+              <Text style={styles.definitionText}>{task.expectedAnswer}</Text>
             </View>
+          )}
 
-            {audioUri && (
-              <TouchableOpacity
-                style={[styles.audioButton, !audioUri && { opacity: 0.6 }]}
-                onPress={async () => {
-                  if (!audioUri) return;
-                  try {
-                    const { sound } = await Audio.Sound.createAsync({ uri: audioUri });
-                    await sound.playAsync();
-                  } catch (e) {
-                    console.error('Playback failed:', e);
-                    Alert.alert('Error', 'Could not play recording.');
-                  }
-                }}
-                disabled={!audioUri}
-              >
-                <Text style={styles.audioButtonText}>Play Recording</Text>
-                <Icon name="play" size={16} color="#fff" style={styles.buttonIcon} />
-              </TouchableOpacity>
-            )}
-          </View>
-        </>
-      )}
+          {currentActivity.skill === 'writing' && (
+            <View style={styles.inputCard}>
+              <Text style={styles.inputLabel}>Your Answer</Text>
+              <TextInput
+                style={styles.answerInput}
+                placeholder="Type your answer here..."
+                placeholderTextColor="#999999"
+                value={answers[activityId]?.[currentTaskIndex] || ''}
+                onChangeText={(text) => handleInputChange(activityId, currentTaskIndex, text)}
+                multiline
+              />
+            </View>
+          )}
 
-      <View style={styles.sideBySideButtons}>
-        {currentTaskIndex > 0 ? (
+          {currentActivity.skill === 'reading' && (
+            <>
+              <View style={styles.transcriptionCard}>
+                <Text style={styles.transcriptionLabel}>AI Transcription</Text>
+                <Text style={styles.transcriptionText}>
+                  {answers[activityId]?.[currentTaskIndex] || 'No transcription yet. Record your voice to see the text here.'}
+                </Text>
+              </View>
+
+              <View style={styles.audioControlsContainer}>
+                <View style={styles.recordingSection}>
+                  <TouchableOpacity
+                    style={[styles.recordButton, isRecording && styles.recordingButton]}
+                    onPress={isRecording ? stopRecording : startRecording}
+                    activeOpacity={0.8}
+                  >
+                    <Icon 
+                      name={isRecording ? "stop" : "microphone"} 
+                      size={16} 
+                      color="#FFFFFF" 
+                    />
+                    <Text style={styles.recordButtonText}>
+                      {isRecording ? 'Stop Recording' : 'Start Recording'}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {audioUri && (
+                    <View style={styles.audioActions}>
+                      <TouchableOpacity
+                        style={styles.playButton}
+                        onPress={async () => {
+                          try {
+                            const { sound } = await Audio.Sound.createAsync({ uri: audioUri });
+                            await sound.playAsync();
+                          } catch (e) {
+                            console.error('Playback failed:', e);
+                            Alert.alert('Error', 'Could not play recording.');
+                          }
+                        }}
+                        activeOpacity={0.8}
+                      >
+                        <Icon name="play" size={14} color="#6B5ECD" />
+                        <Text style={styles.playButtonText}>Play</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.deleteButton}
+                        onPress={deleteRecording}
+                        activeOpacity={0.8}
+                      >
+                        <Icon name="trash" size={14} color="#F44336" />
+                        <Text style={styles.deleteButtonText}>Delete</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              </View>
+            </>
+          )}
+        </ScrollView>
+
+        <View style={styles.navigationContainer}>
           <TouchableOpacity
-            style={[styles.sideButton, styles.skipButton]}
-            onPress={() => setCurrentTaskIndex((prev) => prev - 1)}
-          >
-            <Text style={styles.buttonText}>Previous</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={[styles.sideButton, styles.skipButton]}
+            style={styles.secondaryButton}
             onPress={() => {
-              setCurrentActivity(null);
-              setCurrentTaskIndex(0);
-            }}
-          >
-            <Text style={styles.buttonText}>Back to Activities</Text>
-          </TouchableOpacity>
-        )}
-
-        {currentTaskIndex < currentActivity.tasks.length - 1 ? (
-          <TouchableOpacity
-            style={[
-              styles.sideButton,
-              styles.recordButton,
-              { opacity: shouldDisableNext() ? 0.2 : 1 },
-              { backgroundColor: 'blue' },
-            ]}
-            disabled={shouldDisableNext()}
-            onPress={() => {
-              if (shouldDisableNext()) {
-                Alert.alert('Incomplete', 'Complete the task before continuing.');
+              if (currentTaskIndex > 0) {
+                setCurrentTaskIndex((prev) => prev - 1);
               } else {
-                setCurrentTaskIndex((prev) => prev + 1);
+                setCurrentActivity(null);
+                setCurrentTaskIndex(0);
               }
             }}
+            activeOpacity={0.8}
           >
-            <Text style={styles.buttonText}>Next</Text>
+            <Text style={styles.secondaryButtonText}>
+              {currentTaskIndex > 0 ? 'Previous' : 'Back'}
+            </Text>
           </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={[styles.sideButton, styles.audioButton]}
-            onPress={() => handleSubmitAnswers(currentActivity._id)}
-          >
-            <Text style={styles.audioButtonText}>Submit</Text>
-            <Icon name="send" size={16} color="#fff" style={styles.buttonIcon} />
-          </TouchableOpacity>
-        )}
+
+          {currentTaskIndex < currentActivity.tasks.length - 1 ? (
+            <TouchableOpacity
+              style={[
+                styles.primaryButton,
+                shouldDisableNext() && styles.disabledButton
+              ]}
+              disabled={shouldDisableNext()}
+              onPress={() => {
+                if (shouldDisableNext()) {
+                  Alert.alert('Incomplete', 'Complete the task before continuing.');
+                } else {
+                  setCurrentTaskIndex((prev) => prev + 1);
+                }
+              }}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.primaryButtonText}>Next</Text>
+              <Icon name="arrow-right" size={14} color="#FFFFFF" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={() => handleSubmitAnswers(currentActivity._id)}
+              activeOpacity={0.8}
+            >
+              <Icon name="check" size={14} color="#FFFFFF" />
+              <Text style={styles.submitButtonText}>Submit</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
-    </View>
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#6B5ECD" />
+          <Text style={styles.loadingText}>Loading activities...</Text>
+        </View>
+      ) : (
+        currentActivity ? renderCurrentTask() : renderActivityList()
+      )}
+    </SafeAreaView>
   );
 };
-
-  return loading ? (
-    <View style={styles.loaderContainer}>
-      <ActivityIndicator size="large" color="#B052F7" />
-    </View>
-  ) : (
-    <ScrollView style={styles.container}>
-      <View style={styles.decorativeCirclesContainer}>
-        <View style={styles.decorativeCircle1} />
-        <View style={styles.decorativeCircle2} />
-        <View style={styles.decorativeCircle3} />
-      </View>
-      {currentActivity ? renderCurrentTask() : renderActivityList()}
-    </ScrollView>
-  );
-};
-
-
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
-    paddingTop: 40,
+    backgroundColor: '#FFFFFF',
   },
-  loaderContainer: {
+  loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  noTasks: {
-    textAlign: 'center',
-    marginTop: 80,
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666666',
+  },
+  activitiesContainer: {
+    flex: 1,
+    paddingTop: 50,
+  },
+  header: {
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#333333',
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  emptyStateText: {
     fontSize: 18,
-    color: '#999',
+    fontWeight: '600',
+    color: '#666666',
+    marginTop: 16,
+    textAlign: 'center',
   },
-  mainCard: {
-    backgroundColor: '#6C63FF',
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: '#999999',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  activitiesList: {
+    paddingHorizontal: 24,
+    paddingTop: 20,
+  },
+  activityCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F8F8',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#6B5ECD',
+  },
+  activityIconContainer: {
+    width: 40,
+    height: 40,
     borderRadius: 20,
-    marginHorizontal: 20,
-    marginVertical: 10,
-    padding: 20,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
-  },
-  iconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#4B47C2',
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'absolute',
-    top: -24,
-    left: 20,
-    elevation: 4,
+    marginRight: 16,
   },
-  mainCardTitle: {
-    color: '#fff',
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    marginTop: 20,
+  activityContent: {
+    flex: 1,
   },
-  descriptionText: {
-    color: '#E5E5E5',
-    fontSize: 15,
+  activityTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333333',
+    marginBottom: 4,
   },
-  descriptionContainer: {
-    marginHorizontal: 20,
-    marginTop: 60,
+  activityDescription: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 8,
+    lineHeight: 20,
   },
-  descriptionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+  activityMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  activityBadge: {
+    backgroundColor: '#6B5ECD',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  activityBadgeText: {
+    fontSize: 12,
+    color: '#FFFFFF',
+    fontWeight: '500',
+  },
+  activityTaskCount: {
+    fontSize: 12,
+    color: '#999999',
+  },
+  taskContainer: {
+    flex: 1,
+    paddingTop: 50,
+  },
+  taskHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  backButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F8F8F8',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  taskHeaderTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333333',
+  },
+  placeholder: {
+    width: 32,
+  },
+  progressContainer: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+  },
+  progressText: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 8,
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#6B5ECD',
+    borderRadius: 2,
+  },
+  taskContent: {
+    flex: 1,
+    paddingHorizontal: 24,
+  },
+  taskPromptCard: {
+    backgroundColor: '#F8F8F8',
+    borderRadius: 12,
+    padding: 16,
     marginBottom: 16,
   },
-  taskCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
-    elevation: 3,
-  },
-  taskPrompt: {
-    fontSize: 17,
+  taskPromptLabel: {
+    fontSize: 12,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 10,
+    color: '#666666',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  taskPromptText: {
+    fontSize: 16,
+    color: '#333333',
+    lineHeight: 24,
+  },
+  definitionCard: {
+    backgroundColor: '#F0F8FF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#6B5ECD',
+  },
+  definitionLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B5ECD',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  definitionText: {
+    fontSize: 14,
+    color: '#333333',
+    lineHeight: 20,
+  },
+  inputCard: {
+    backgroundColor: '#F8F8F8',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#666666',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   answerInput: {
-    borderWidth: 1,
-    borderColor: '#DDD',
-    borderRadius: 10,
-    padding: 14,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    padding: 12,
     fontSize: 16,
-    backgroundColor: '#F2F2F2',
+    color: '#333333',
+    minHeight: 80,
+    textAlignVertical: 'top',
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
   },
-  audioButton: {
-    backgroundColor: '#6C63FF',
-    paddingVertical: 14,
-    paddingHorizontal: 18,
+  transcriptionCard: {
+    backgroundColor: '#F8F8F8',
     borderRadius: 12,
-    marginTop: 10,
+    padding: 16,
+    marginBottom: 16,
+  },
+  transcriptionLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#666666',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  transcriptionText: {
+    fontSize: 14,
+    color: '#333333',
+    lineHeight: 20,
+    fontStyle: 'italic',
+  },
+  audioControlsContainer: {
+    marginBottom: 16,
+  },
+  recordingSection: {
+    gap: 12,
+  },
+  recordButton: {
+    backgroundColor: '#6B5ECD',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 3,
+    paddingVertical: 12,
+    borderRadius: 8,
+    gap: 8,
   },
-  audioButtonText: {
-    color: '#fff',
-    fontSize: 16,
+  recordingButton: {
+    backgroundColor: '#F44336',
+  },
+  recordButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
     fontWeight: '600',
   },
-  buttonIcon: {
-    marginLeft: 8,
-  },
-  actionButtonsContainer: {
+  audioActions: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 30,
+    gap: 8,
   },
-  recordButton: {
+  playButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F8F8F8',
+    paddingVertical: 10,
+    borderRadius: 6,
+    gap: 6,
+  },
+  playButtonText: {
+    color: '#6B5ECD',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  deleteButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F8F8F8',
+    paddingVertical: 10,
+    borderRadius: 6,
+    gap: 6,
+  },
+  deleteButtonText: {
+    color: '#F44336',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  navigationContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+  },
+  primaryButton: {
+    flex: 1,
+    backgroundColor: '#6B5ECD',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 8,
+    gap: 6,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    flex: 1,
+    backgroundColor: '#F8F8F8',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  secondaryButtonText: {
+    color: '#666666',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  submitButton: {
+    flex: 1,
     backgroundColor: '#4CAF50',
-    paddingVertical: 14,
-    borderRadius: 12,
-    width: '48%',
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 8,
+    gap: 6,
   },
-  stopRecordButton: {
-    backgroundColor: '#FF4D4D',
-    paddingVertical: 14,
+  submitButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  disabledButton: {
+    backgroundColor: '#E0E0E0',
+  },
+  feedbackContainer: {
+    flex: 1,
+    paddingHorizontal: 24,
+  },
+  feedbackCard: {
+    backgroundColor: '#F8F8F8',
     borderRadius: 12,
-    width: '48%',
-    alignItems: 'center',
+    padding: 16,
+    marginBottom: 16,
   },
-  skipButton: {
-    backgroundColor: '#999999',
-    paddingVertical: 14,
-    borderRadius: 12,
-    width: '48%',
-    alignItems: 'center',
+  feedbackTaskNumber: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B5ECD',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  buttonText: {
-    color: '#fff',
+  feedbackPrompt: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    color: '#333333',
+    marginBottom: 12,
   },
-  decorativeCirclesContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 150,
+  feedbackSection: {
+    marginBottom: 12,
   },
-  decorativeCircle1: {
-    position: 'absolute',
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#FDCB6E',
-    top: 10,
-    right: 20,
-    opacity: 0.7,
+  feedbackLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#666666',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  decorativeCircle2: {
-    position: 'absolute',
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: '#74B9FF',
-    top: 60,
-    right: 90,
-    opacity: 0.5,
+  feedbackAnswer: {
+    fontSize: 14,
+    color: '#333333',
+    lineHeight: 20,
   },
-  decorativeCircle3: {
-    position: 'absolute',
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#E17055',
-    top: 40,
-    right: 60,
-    opacity: 0.7,
+  feedbackText: {
+    fontSize: 14,
+    color: '#666666',
+    lineHeight: 20,
+    fontStyle: 'italic',
   },
-  sideBySideButtons: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  gap: 10,
-  marginTop: 20,
-},
-sideButton: {
-  flex: 1,
-  paddingVertical: 14,
-  borderRadius: 12,
-  alignItems: 'center',
-  flexDirection: 'row',
-  justifyContent: 'center',
-},
-
 });
 
 export default ActivityScreen;

@@ -145,6 +145,7 @@ const WordPracticeGame = () => {
       setIsLoading(false);
     }
   };
+  
   // Generate an alphabet bank from the word
   const generateAlphabetBank = (word) => {
     // Create an array of letter objects with IDs
@@ -316,6 +317,7 @@ const WordPracticeGame = () => {
       }
     };
   }, []);
+  
   // update progress
   const updateProgress = async (gameStats) => {
     try {
@@ -330,90 +332,83 @@ const WordPracticeGame = () => {
       console.error('Error updating progress:', error);
     }
   };
+  
   // Render functions for different game states
   const renderInitScreen = () => (
     <View style={styles.contentContainer}>
       <View style={styles.logoContainer}>
-        <Icon name="book" size={50} color="#B052F7" />
+        <Icon name="book" size={40} color="#6B5ECD" />
       </View>
       <Text style={styles.welcomeTitle}>Word Memory Game</Text>
       <Text style={styles.instructions}>
-        Memorize the word shown on screen.
-        After a few seconds, the word will disappear.
+        Memorize the word shown on screen. After a few seconds, the word will disappear. 
         Spell the word from memory using the letters provided.
-        Each round has 10 words.
-        You have 3 attempts for each word.
       </Text>
       <TouchableOpacity 
         style={styles.startButton} 
         onPress={startGame}
         disabled={isLoading}
+        activeOpacity={0.8}
       >
         <Text style={styles.startButtonText}>
           {isLoading ? "Loading..." : "Start Game"}
         </Text>
-        {!isLoading && <Icon name="play" size={20} color="white" style={styles.buttonIcon} />}
       </TouchableOpacity>
     </View>
   );
 
   const renderGameScreen = () => (
     <View style={styles.contentContainer}>
-      <View style={styles.wordPromptContainer}>
-        <Text style={styles.wordPrompt}>
-          {isWordVisible 
-            ? `Memorize this word: (${countdownValue})` 
-            : ""}
-        </Text>
-        
+      <View style={styles.wordSection}>
         {isWordVisible ? (
-          <View style={styles.wordCard}>
-            <Text style={styles.word}>{currentWord}</Text>
-          </View>
+          <>
+            <Text style={styles.wordPrompt}>
+              Memorize this word ({countdownValue}s)
+            </Text>
+            <View style={styles.wordCard}>
+              <Text style={styles.word}>{currentWord}</Text>
+            </View>
+          </>
         ) : (
-          <View style={styles.hiddenWordContainer}>
-            <Icon name="eye-off" size={24} color="#B052F7" />
-            <Text style={styles.hiddenWordText}>Word is hidden</Text>
-          </View>
+          <>
+            <Text style={styles.wordPrompt}>Spell the word</Text>
+            <View style={styles.inputCard}>
+              <Text style={styles.userInput}>{userInput || "..."}</Text>
+              {userInput.length > 0 && (
+                <TouchableOpacity style={styles.backspaceButton} onPress={removeLastLetter}>
+                  <Icon name="delete" size={18} color="#FFFFFF" />
+                </TouchableOpacity>
+              )}
+            </View>
+          </>
         )}
       </View>
 
-      {/* Input display area - only show when word is hidden */}
       {!isWordVisible && (
         <>
-          <View style={styles.inputContainer}>
-            <Text style={styles.input}>{userInput}</Text>
-            
-            {/* Backspace button */}
-            {userInput.length > 0 && (
-              <TouchableOpacity style={styles.backspaceButton} onPress={removeLastLetter}>
-                <Icon name="delete" size={20} color="white" />
-              </TouchableOpacity>
-            )}
+          <View style={styles.lettersSection}>
+            <Text style={styles.sectionLabel}>Available Letters</Text>
+            <View style={styles.alphabetBank}>
+              {alphabetBank.map((letter) => (
+                <TouchableOpacity 
+                  key={letter.id} 
+                  style={styles.letterButton}
+                  onPress={() => addLetterToInput(letter)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.letterText}>{letter.text}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
 
-          {/* Alphabet bank */}
-          <Text style={styles.sectionLabel}>Letter Bank:</Text>
-          <View style={styles.alphabetBank}>
-            {alphabetBank.map((letter) => (
-              <TouchableOpacity 
-                key={letter.id} 
-                style={styles.letterButton}
-                onPress={() => addLetterToInput(letter)}
-              >
-                <Text style={styles.letterText}>{letter.text}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Action buttons */}
-          <View style={styles.buttonContainer}>
+          <View style={styles.actionsSection}>
             <TouchableOpacity 
               style={styles.secondaryButton} 
               onPress={resetWord}
+              activeOpacity={0.8}
             >
               <Text style={styles.secondaryButtonText}>Reset</Text>
-              <Icon name="refresh-cw" size={16} color="#B052F7" style={styles.secondaryButtonIcon} />
             </TouchableOpacity>
             
             <TouchableOpacity 
@@ -423,26 +418,22 @@ const WordPracticeGame = () => {
               ]} 
               onPress={checkWord}
               disabled={userInput.length === 0}
+              activeOpacity={0.8}
             >
-              <Text style={styles.primaryButtonText}>Check</Text>
-              <Icon name="check" size={16} color="white" style={styles.buttonIcon} />
+              <Text style={styles.primaryButtonText}>Submit</Text>
             </TouchableOpacity>
           </View>
         </>
       )}
 
-      {/* Feedback message */}
       {feedback !== '' && (
-        <View style={[
-          styles.feedbackContainer,
-          feedback.includes("Correct") ? styles.successFeedback : 
-          feedback.includes("correct word") ? styles.failureFeedback : 
-          styles.neutralFeedback
-        ]}>
-          <Text style={styles.feedbackText}>
-            {feedback.includes("Correct") && <Icon name="check-circle" size={20} color="#4CAF50" />}
-            {feedback.includes("correct word") && <Icon name="x-circle" size={20} color="#F44336" />}
-            {' '}{feedback}
+        <View style={styles.feedbackSection}>
+          <Text style={[
+            styles.feedbackText,
+            feedback.includes("Correct") && styles.successText,
+            feedback.includes("correct word") && styles.errorText
+          ]}>
+            {feedback}
           </Text>
         </View>
       )}
@@ -451,17 +442,16 @@ const WordPracticeGame = () => {
 
   const renderCompletedScreen = () => (
     <View style={styles.contentContainer}>
-      <View style={styles.completedIconContainer}>
-        <Icon name="award" size={80} color="#B052F7" />
+      <View style={styles.completedContainer}>
+        <Icon name="award" size={60} color="#6B5ECD" />
+        <Text style={styles.completedTitle}>Game Complete!</Text>
+        <Text style={styles.completedScore}>Final Score: {score}</Text>
+        <Text style={styles.completedRound}>Rounds: {round}</Text>
       </View>
-      <Text style={styles.completedTitle}>Game Completed!</Text>
-      <Text style={styles.completedScore}>Final Score: {score}</Text>
-      <Text style={styles.completedRound}>Rounds Completed: {round}</Text>
       
       <TouchableOpacity 
         style={styles.startButton} 
         onPress={() => {
-          // Update progress if not already updated
           if (!progressUpdated) {
             const correctWords = Math.floor(score / 4);
             updateProgress({
@@ -472,9 +462,9 @@ const WordPracticeGame = () => {
           }
           startGame();
         }}
+        activeOpacity={0.8}
       >
         <Text style={styles.startButtonText}>Play Again</Text>
-        <Icon name="refresh-cw" size={20} color="white" style={styles.buttonIcon} />
       </TouchableOpacity>
     </View>
   );
@@ -482,45 +472,39 @@ const WordPracticeGame = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {/* Header with game info */}
+        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Memory Game</Text>
         </View>
         
-        {/* Game info area */}
-        <View style={styles.infoCard}>
-          <View style={styles.infoRow}>
-            <View style={styles.infoItem}>
-              <Icon name="flag" size={16} color="#B052F7" />
-              <Text style={styles.infoLabel}>Round</Text>
-              <Text style={styles.infoValue}>{round}</Text>
+        {/* Stats */}
+        <View style={styles.statsContainer}>
+          <View style={styles.statItem}>
+            <Text style={styles.statLabel}>Round</Text>
+            <Text style={styles.statValue}>{round}</Text>
+          </View>
+          
+          {gameState === 'inProgress' && (
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>Word</Text>
+              <Text style={styles.statValue}>{wordIndex + 1}/10</Text>
             </View>
-            
-            {gameState === 'inProgress' && (
-              <View style={styles.infoItem}>
-                <Icon name="book-open" size={16} color="#B052F7" />
-                <Text style={styles.infoLabel}>Word</Text>
-                <Text style={styles.infoValue}>{wordIndex + 1}/10</Text>
-              </View>
-            )}
-            
-            {gameState === 'inProgress' && (
-              <View style={styles.infoItem}>
-                <Icon name="repeat" size={16} color="#B052F7" />
-                <Text style={styles.infoLabel}>Attempt</Text>
-                <Text style={styles.infoValue}>{attempts + 1}/3</Text>
-              </View>
-            )}
-            
-            <View style={styles.infoItem}>
-              <Icon name="star" size={16} color="#B052F7" />
-              <Text style={styles.infoLabel}>Score</Text>
-              <Text style={styles.infoValue}>{score}</Text>
+          )}
+          
+          {gameState === 'inProgress' && (
+            <View style={styles.statItem}>
+              <Text style={styles.statLabel}>Attempt</Text>
+              <Text style={styles.statValue}>{attempts + 1}/3</Text>
             </View>
+          )}
+          
+          <View style={styles.statItem}>
+            <Text style={styles.statLabel}>Score</Text>
+            <Text style={styles.statValue}>{score}</Text>
           </View>
         </View>
         
-        {/* Dynamic content based on game state */}
+        {/* Content */}
         {gameState === 'init' && renderInitScreen()}
         {gameState === 'inProgress' && renderGameScreen()}
         {gameState === 'completed' && renderCompletedScreen()}
@@ -532,346 +516,238 @@ const WordPracticeGame = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8F8FF',
+    backgroundColor: '#FFFFFF',
   },
   container: {
     flex: 1,
+    paddingTop: 50,
   },
   header: {
-    backgroundColor: '#B052F7',
-    paddingVertical: 20,
     alignItems: 'center',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    textAlign: 'center',
+    fontWeight: '700',
+    color: '#333333',
   },
-  infoCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 15,
-    margin: 16,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  infoRow: {
+  statsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  statItem: {
     alignItems: 'center',
   },
-  infoItem: {
-    alignItems: 'center',
-    padding: 10,
+  statLabel: {
+    fontSize: 13,
+    color: '#666666',
+    fontWeight: '500',
+    marginBottom: 4,
   },
-  infoLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 4,
-  },
-  infoValue: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+  statValue: {
+    fontSize: 18,
+    color: '#6B5ECD',
+    fontWeight: '700',
   },
   contentContainer: {
     flex: 1,
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    padding: 24,
+    justifyContent: 'center',
   },
   logoContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(176, 82, 247, 0.1)',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F8F6FF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
+    alignSelf: 'center',
+    marginBottom: 32,
   },
   welcomeTitle: {
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: '700',
+    color: '#333333',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
   },
   instructions: {
     fontSize: 16,
-    color: '#555',
+    color: '#666666',
     textAlign: 'center',
-    marginBottom: 40,
     lineHeight: 24,
+    marginBottom: 40,
   },
   startButton: {
-    width: '80%',
-    height: 56,
-    borderRadius: 12,
-    backgroundColor: '#B052F7',
-    flexDirection: 'row',
-    justifyContent: 'center',
+    backgroundColor: '#6B5ECD',
+    paddingVertical: 16,
+    borderRadius: 8,
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    marginHorizontal: 24,
   },
   startButtonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
-  buttonIcon: {
-    marginLeft: 8,
-  },
-  wordPromptContainer: {
+  wordSection: {
     alignItems: 'center',
-    marginBottom: 24,
-    width: '100%',
+    marginBottom: 40,
   },
   wordPrompt: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#B052F7',
-    marginBottom: 16,
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333333',
+    marginBottom: 20,
+    textAlign: 'center',
   },
   wordCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    minWidth: '80%',
+    backgroundColor: '#F8F6FF',
+    paddingVertical: 24,
+    paddingHorizontal: 32,
+    borderRadius: 12,
     alignItems: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
+    minWidth: '80%',
   },
   word: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: '700',
+    color: '#6B5ECD',
+    textAlign: 'center',
   },
-  hiddenWordContainer: {
-    backgroundColor: '#F0F0F0',
-    borderRadius: 16,
-    padding: 20,
+  inputCard: {
+    backgroundColor: '#F8F8F8',
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
     minWidth: '80%',
-    alignItems: 'center',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    flexDirection: 'row',
-  },
-  hiddenWordText: {
-    fontSize: 18,
-    color: '#666',
-    marginLeft: 8,
-  },
-  inputContainer: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 16,
-    width: '90%',
-    minHeight: 70,
+    minHeight: 60,
     justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
     position: 'relative',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
-  input: {
+  userInput: {
     fontSize: 24,
-    color: '#333',
+    fontWeight: '600',
+    color: '#333333',
     letterSpacing: 2,
-    fontWeight: '500',
     textAlign: 'center',
   },
   backspaceButton: {
     position: 'absolute',
     right: 12,
-    top: '50%',
-    marginTop: -18,
-    width: 36,
-    height: 36,
-    backgroundColor: '#B052F7',
-    borderRadius: 18,
+    backgroundColor: '#6B5ECD',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 3,
+  },
+  lettersSection: {
+    marginBottom: 32,
   },
   sectionLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#666',
-    alignSelf: 'flex-start',
-    marginLeft: 20,
-    marginBottom: 8,
+    color: '#666666',
+    marginBottom: 16,
+    textAlign: 'center',
   },
   alphabetBank: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 16,
-    width: '90%',
-    minHeight: 120,
-    marginVertical: 8,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    gap: 8,
   },
   letterButton: {
-    backgroundColor: '#B052F7',
+    backgroundColor: '#6B5ECD',
     width: 44,
     height: 44,
-    borderRadius: 12,
-    margin: 6,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    margin: 4,
   },
   letterText: {
-    color: 'white',
+    color: '#FFFFFF',
+    fontSize: 18,
     fontWeight: '600',
-    fontSize: 20,
   },
-  buttonContainer: {
+  actionsSection: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '90%',
-    marginTop: 16,
+    gap: 12,
+    marginBottom: 24,
   },
   primaryButton: {
     flex: 1,
-    height: 56,
-    marginLeft: 8,
-    borderRadius: 12,
-    backgroundColor: '#B052F7',
-    flexDirection: 'row',
-    justifyContent: 'center',
+    backgroundColor: '#6B5ECD',
+    paddingVertical: 16,
+    borderRadius: 8,
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   secondaryButton: {
     flex: 1,
-    backgroundColor: 'white',
-    height: 56,
-    borderRadius: 12,
-    marginRight: 8,
-    justifyContent: 'center',
+    backgroundColor: '#F8F8F8',
+    paddingVertical: 16,
+    borderRadius: 8,
     alignItems: 'center',
-    flexDirection: 'row',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  primaryButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
   secondaryButtonText: {
-    color: '#B052F7',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  secondaryButtonIcon: {
-    marginLeft: 8,
+    color: '#666666',
+    fontSize: 16,
+    fontWeight: '500',
   },
   disabledButton: {
-    backgroundColor: '#D0D0D0',
-    opacity: 0.7,
+    backgroundColor: '#E0E0E0',
   },
-  feedbackContainer: {
-    marginTop: 24,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    width: '90%',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-  },
-  successFeedback: {
-    backgroundColor: '#E8F5E9',
-    borderLeftWidth: 4,
-    borderLeftColor: '#4CAF50',
-  },
-  failureFeedback: {
-    backgroundColor: '#FFEBEE',
-    borderLeftWidth: 4,
-    borderLeftColor: '#F44336',
-  },
-  neutralFeedback: {
-    backgroundColor: '#F5F5F5',
-    borderLeftWidth: 4,
-    borderLeftColor: '#9E9E9E',
+  feedbackSection: {
+    alignItems: 'center',
+    marginTop: 20,
   },
   feedbackText: {
     fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'left',
-    color: '#333',
+    fontWeight: '500',
+    color: '#666666',
+    textAlign: 'center',
   },
-  completedIconContainer: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: 'rgba(176, 82, 247, 0.1)',
-    justifyContent: 'center',
+  successText: {
+    color: '#4CAF50',
+  },
+  errorText: {
+    color: '#F44336',
+  },
+  completedContainer: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 40,
   },
   completedTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 24,
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#333333',
+    marginTop: 16,
+    marginBottom: 8,
   },
   completedScore: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
+    color: '#6B5ECD',
+    marginBottom: 4,
   },
   completedRound: {
-    fontSize: 18,
-    color: '#666',
-    marginBottom: 40,
+    fontSize: 16,
+    color: '#666666',
   },
 });
 

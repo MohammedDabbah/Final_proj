@@ -1,21 +1,22 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native'; // Import the navigation hook
+import { useNavigation } from '@react-navigation/native';
 
 const ImprovingWritingScreen = () => {
-  const navigation = useNavigation(); // Get navigation prop using the hook
+  const navigation = useNavigation();
 
   const navigateToSentencePractice = () => {
-    navigation.navigate('SentencePracticeWriting'); // Navigate to the 'SentencePractice' screen
+    navigation.navigate('SentencePracticeWriting');
   };
+  
   const navigateToWordsPracticeWriting = () => {
-    navigation.navigate('WordsPracticeWriting'); // Navigate to the 'SentencePractice' screen
+    navigation.navigate('WordsPracticeWriting');
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Decorative background elements - Repositioned and resized */}
+      {/* Decorative background elements */}
       <View style={styles.decorativeCirclesContainer}>
         <View style={styles.decorativeCircle1} />
         <View style={styles.decorativeCircle2} />
@@ -46,22 +47,21 @@ const ImprovingWritingScreen = () => {
       {/* Bottom action cards */}
       <View style={styles.bottomSection}>
         <TouchableOpacity 
-        style={styles.actionCard}
-        onPress={navigateToWordsPracticeWriting} // Add this onPress handler for navigation
-
+          style={styles.actionCard}
+          onPress={navigateToWordsPracticeWriting}
         >
           <View style={styles.iconContainer}>
-            <Feather name="book" size={24} color="black" />
+            <Feather name="book" size={24} color="#6B5ECD" />
           </View>
           <Text style={styles.actionCardText}>Words Practice</Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
           style={styles.actionCard} 
-          onPress={navigateToSentencePractice} // Add this onPress handler for navigation
+          onPress={navigateToSentencePractice}
         >
           <View style={styles.iconContainer}>
-            <Feather name="align-left" size={24} color="black" />
+            <Feather name="align-left" size={24} color="#6B5ECD" />
           </View>
           <Text style={styles.actionCardText}>Sentences Practice</Text>
         </TouchableOpacity>
@@ -91,8 +91,8 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#F8D568', // Yellow circle
-    opacity:2,
+    backgroundColor: '#F8D568',
+    opacity: 0.8,
     zIndex: 1,
   },
   decorativeCircle2: {
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#5454CE', // Purple circle
+    backgroundColor: '#6B5ECD',
     zIndex: 1,
   },
   decorativeCircle3: {
@@ -112,20 +112,24 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#F29CB1', // Pink circle - Moved to be more visible
-    opacity: 1, // Increased opacity for better visibility
-    zIndex: 3, // Higher z-index to ensure it's on top
+    backgroundColor: '#F29CB1',
+    opacity: 1,
+    zIndex: 3,
   },
   mainCard: {
     marginTop: 80,
     marginHorizontal: 20,
     height: 160,
-    backgroundColor: '#5454CE', // Purple main card
+    backgroundColor: '#6B5ECD',
     borderRadius: 20,
     padding: 20,
     shadowColor: '#080707',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
     justifyContent: 'flex-end',
-    zIndex: 6, // Ensure it's above the circles
+    zIndex: 6,
   },
   iconCircle: {
     position: 'absolute',
@@ -134,7 +138,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#5454CE',
+    backgroundColor: '#6B5ECD',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#080707',
@@ -158,6 +162,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
+    color: '#333',
   },
   descriptionText: {
     fontSize: 15,
@@ -169,11 +174,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#5454CE', // Purple bottom section
+    backgroundColor: '#6B5ECD',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     padding: 20,
-    paddingBottom: 30, // Added extra padding at the bottom
+    paddingBottom: 30,
   },
   actionCard: {
     flexDirection: 'row',
@@ -183,15 +188,15 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     height: 70,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   iconContainer: {
     width: 60,
     height: '100%',
-    backgroundColor: '#FFF0D9', // Light beige
+    backgroundColor: '#FFF0D9',
     borderTopLeftRadius: 15,
     borderBottomLeftRadius: 15,
     justifyContent: 'center',
@@ -201,6 +206,7 @@ const styles = StyleSheet.create({
     marginLeft: 15,
     fontSize: 16,
     fontWeight: '500',
+    color: '#333',
   },
 });
 

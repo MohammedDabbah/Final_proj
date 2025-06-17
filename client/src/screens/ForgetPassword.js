@@ -70,7 +70,7 @@ const ForgotPassword = () => {
           />
           <TouchableOpacity style={styles.buttonOutline} onPress={handleSendCode} disabled={loading}>
             {loading ? (
-              <ActivityIndicator size="small" color="#6200EE" />
+              <ActivityIndicator size="small" color="#6B5ECD" />
             ) : (
               <Text style={styles.buttonOutlineText}>Send Verification Code</Text>
             )}

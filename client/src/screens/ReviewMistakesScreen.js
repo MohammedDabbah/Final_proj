@@ -4,7 +4,6 @@ import serverApi from '../../api/serverApi';
 import { AuthContext } from '../../Auth/AuthContext';
 import { CommonActions } from '@react-navigation/native';
 
-
 const ReviewMistakesScreen = ({ navigation }) => {
     const { user } = useContext(AuthContext);
     const [wrongAnswers, setWrongAnswers] = useState([]);
@@ -27,7 +26,7 @@ const ReviewMistakesScreen = ({ navigation }) => {
 
     const startQuizWithMistakes = () => {
         if (wrongAnswers.length === 0) {
-            Alert.alert('No Mistakes', 'You don’t have any mistakes to review.');
+            Alert.alert('No Mistakes', 'You do not have any mistakes to review.');
             return;
         }
 
@@ -37,51 +36,95 @@ const ReviewMistakesScreen = ({ navigation }) => {
         });
     };
 
-   const goToHome = () => {
+    const goToHome = () => {
         navigation.dispatch(
             CommonActions.reset({
                 index: 0,
-                routes: [{ name: 'Home' }], // 🧠 Use your actual home screen name
+                routes: [{ name: 'StudentHome' }],
             })
         );
     };
 
-    if (loading)
+    if (loading) {
         return (
-            <ActivityIndicator
-                size="large"
-                color="#6B5ECD"
-                style={{ flex: 1, justifyContent: 'center' }}
-            />
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#6B5ECD" />
+                <Text style={styles.loadingText}>Loading your mistakes...</Text>
+            </View>
         );
+    }
+
+    const renderMistakeItem = ({ item, index }) => (
+        <View style={styles.mistakeCard}>
+            <View style={styles.mistakeHeader}>
+                <Text style={styles.mistakeWord}>{item.word}</Text>
+                <Text style={styles.mistakeNumber}>#{index + 1}</Text>
+            </View>
+            <Text style={styles.mistakeDefinition}>{item.definition}</Text>
+        </View>
+    );
 
     return (
         <View style={styles.container}>
-            <Text style={styles.header}>Review Your Mistakes</Text>
-            {wrongAnswers.length === 0 ? (
-                <Text style={styles.noMistakesText}>No mistakes to review! Great job! 🎉</Text>
-            ) : (
-                <>
-                    <FlatList
-                        data={wrongAnswers}
-                        keyExtractor={(item, index) => index.toString()}
-                        renderItem={({ item }) => (
-                            <View style={styles.card}>
-                                <Text style={styles.word}>{item.word}</Text>
-                                <Text style={styles.definition}>{item.definition}</Text>
-                            </View>
-                        )}
-                    />
-                    <TouchableOpacity style={styles.quizButton} onPress={startQuizWithMistakes}>
-                        <Text style={styles.quizButtonText}>Retry Quiz with Mistakes</Text>
-                    </TouchableOpacity>
-                </>
-            )}
+            {/* Header Section */}
+            <View style={styles.headerSection}>
+                <Text style={styles.title}>Review Mistakes</Text>
+                <Text style={styles.subtitle}>
+                    {wrongAnswers.length === 0 
+                        ? "No mistakes to review" 
+                        : wrongAnswers.length + " word" + (wrongAnswers.length !== 1 ? "s" : "") + " to practice"
+                    }
+                </Text>
+            </View>
 
-            {/* ✅ New Button to go back to Home */}
-            <TouchableOpacity style={styles.homeButton} onPress={goToHome}>
-                <Text style={styles.homeButtonText}>Back to Home</Text>
-            </TouchableOpacity>
+            {/* Content Section */}
+            <View style={styles.contentSection}>
+                {wrongAnswers.length === 0 ? (
+                    <View style={styles.emptyState}>
+                        <Text style={styles.emptyStateTitle}>Perfect! 🎉</Text>
+                        <Text style={styles.emptyStateText}>
+                            You have not made any mistakes yet.{"\n"}
+                            Keep up the great work!
+                        </Text>
+                    </View>
+                ) : (
+                    <>
+                        <View style={styles.statsBar}>
+                            <Text style={styles.statsText}>Words to review</Text>
+                            <Text style={styles.statsNumber}>{wrongAnswers.length}</Text>
+                        </View>
+
+                        <FlatList
+                            data={wrongAnswers}
+                            keyExtractor={(item, index) => index.toString()}
+                            renderItem={renderMistakeItem}
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={styles.listContainer}
+                        />
+                    </>
+                )}
+            </View>
+
+            {/* Actions Section */}
+            <View style={styles.actionsSection}>
+                {wrongAnswers.length > 0 && (
+                    <TouchableOpacity 
+                        style={styles.primaryButton} 
+                        onPress={startQuizWithMistakes}
+                        activeOpacity={0.8}
+                    >
+                        <Text style={styles.primaryButtonText}>Practice These Words</Text>
+                    </TouchableOpacity>
+                )}
+                
+                <TouchableOpacity 
+                    style={styles.secondaryButton} 
+                    onPress={goToHome}
+                    activeOpacity={0.8}
+                >
+                    <Text style={styles.secondaryButtonText}>Back to Home</Text>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 };
@@ -89,66 +132,139 @@ const ReviewMistakesScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F8F6FF',
-        padding: 20,
+        backgroundColor: '#FFFFFF',
+        paddingTop: 60,
     },
-    header: {
+    loadingContainer: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        marginTop: 12,
+        fontSize: 16,
+        color: '#666666',
+    },
+    headerSection: {
+        paddingHorizontal: 24,
+        paddingBottom: 24,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F0F0F0',
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: '700',
+        color: '#333333',
+        marginBottom: 4,
+    },
+    subtitle: {
+        fontSize: 16,
+        color: '#666666',
+    },
+    contentSection: {
+        flex: 1,
+        paddingHorizontal: 24,
+        paddingTop: 24,
+    },
+    emptyState: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingBottom: 100,
+    },
+    emptyStateTitle: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontWeight: '700',
         color: '#6B5ECD',
-        marginBottom: 15,
-        textAlign: 'center',
+        marginBottom: 12,
     },
-    noMistakesText: {
-        fontSize: 18,
-        color: '#333',
-        textAlign: 'center',
-        marginTop: 20,
-    },
-    card: {
-        backgroundColor: '#fff',
-        padding: 15,
-        borderRadius: 10,
-        marginBottom: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    word: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    definition: {
+    emptyStateText: {
         fontSize: 16,
-        color: '#555',
-        marginTop: 5,
+        color: '#666666',
+        textAlign: 'center',
+        lineHeight: 24,
     },
-    quizButton: {
+    statsBar: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+        paddingBottom: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F0F0F0',
+    },
+    statsText: {
+        fontSize: 16,
+        color: '#666666',
+        fontWeight: '500',
+    },
+    statsNumber: {
+        fontSize: 20,
+        color: '#6B5ECD',
+        fontWeight: '700',
+    },
+    listContainer: {
+        paddingBottom: 20,
+    },
+    mistakeCard: {
+        backgroundColor: '#F8F8F8',
+        padding: 20,
+        borderRadius: 8,
+        marginBottom: 12,
+        borderLeftWidth: 4,
+        borderLeftColor: '#6B5ECD',
+    },
+    mistakeHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    mistakeWord: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#333333',
+        flex: 1,
+    },
+    mistakeNumber: {
+        fontSize: 14,
+        color: '#6B5ECD',
+        fontWeight: '600',
+    },
+    mistakeDefinition: {
+        fontSize: 16,
+        color: '#666666',
+        lineHeight: 22,
+    },
+    actionsSection: {
+        padding: 24,
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: '#F0F0F0',
+    },
+    primaryButton: {
         backgroundColor: '#6B5ECD',
-        paddingVertical: 15,
-        borderRadius: 10,
-        marginTop: 20,
+        paddingVertical: 16,
+        borderRadius: 8,
         alignItems: 'center',
+        marginBottom: 12,
     },
-    quizButtonText: {
-        color: '#FFF',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    homeButton: {
-        backgroundColor: '#CCCCCC',
-        paddingVertical: 12,
-        borderRadius: 10,
-        marginTop: 15,
-        alignItems: 'center',
-    },
-    homeButtonText: {
-        color: '#333',
+    primaryButtonText: {
+        color: '#FFFFFF',
         fontSize: 16,
         fontWeight: '600',
+    },
+    secondaryButton: {
+        backgroundColor: '#F8F8F8',
+        paddingVertical: 16,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    secondaryButtonText: {
+        color: '#666666',
+        fontSize: 16,
+        fontWeight: '500',
     },
 });
 

@@ -424,19 +424,19 @@ const ImproveReadingScreen = () => {
         <View style={styles.infoCard}>
           <View style={styles.infoRow}>
             <View style={styles.infoItem}>
-              <Icon name="book" size={16} color="#B052F7" />
+              <Icon name="book" size={16} color="#6B5ECD" />
               <Text style={styles.infoLabel}>Mode</Text>
               <Text style={styles.infoValue}>{mode === 'word' ? 'Words' : 'Sentences'}</Text>
             </View>
             
             <View style={styles.infoItem}>
-              <Icon name="flag" size={16} color="#B052F7" />
+              <Icon name="flag" size={16} color="#6B5ECD" />
               <Text style={styles.infoLabel}>Progress</Text>
               <Text style={styles.infoValue}>{currentIndex + 1}/10</Text>
             </View>
             
             <View style={styles.infoItem}>
-              <Icon name="skip-forward" size={16} color="#B052F7" />
+              <Icon name="skip-forward" size={16} color="#6B5ECD" />
               <Text style={styles.infoLabel}>Skipped</Text>
               <Text style={styles.infoValue}>{skippedItems}</Text>
             </View>
@@ -543,7 +543,7 @@ const ImproveReadingScreen = () => {
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <View style={styles.completedIconContainer}>
-            <Icon name="award" size={50} color="#B052F7" />
+            <Icon name="award" size={50} color="#6B5ECD" />
           </View>
           <Text style={styles.modalTitle}>Congratulations!</Text>
           <Text style={styles.modalText}>
@@ -624,7 +624,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#5454CE', // Purple circle (changed to match our theme)
+    backgroundColor: '#6B5ECD', // Purple circle (changed to match our theme)
     zIndex: 1,
   },
   decorativeCircle3: {
@@ -642,7 +642,7 @@ const styles = StyleSheet.create({
     marginTop: 80,
     marginHorizontal: 20,
     height: 160,
-    backgroundColor: '#5454CE', // Changed to our purple color
+    backgroundColor: '#6B5ECD', // Changed to our purple color
     borderRadius: 20,
     padding: 20,
     shadowColor: '#080707',
@@ -660,7 +660,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#5454CE', // Changed to our purple color
+    backgroundColor: '#6B5ECD', // Changed to our purple color
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#080707',
@@ -696,7 +696,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#5454CE', // Changed to our purple color
+    backgroundColor: '#6B5ECD', // Changed to our purple color
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     padding: 20,
@@ -739,7 +739,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   header: {
-    backgroundColor: '#B052F7',
+    backgroundColor: '#6B5ECD',
     paddingVertical: 20,
     alignItems: 'center',
     width: '100%',
@@ -808,11 +808,11 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: '100%',
-    backgroundColor: '#B052F7',
+    backgroundColor: '#6B5ECD',
     borderRadius: 5,
   },
   audioButton: {
-    backgroundColor: '#B052F7',
+    backgroundColor: '#6B5ECD',
     padding: 12,
     borderRadius: 12,
     marginBottom: 20,
@@ -885,7 +885,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   recordButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#666666',
     padding: 15,
     borderRadius: 12,
     width: '48%',
@@ -915,7 +915,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
   },
   skipButton: {
-    backgroundColor: '#ff6b6b',
+    backgroundColor: '#666666',
     padding: 15,
     borderRadius: 12,
     width: '48%',
@@ -979,7 +979,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   modalButton: {
-    backgroundColor: '#B052F7',
+    backgroundColor: '#6B5ECD',
     padding: 15,
     borderRadius: 12,
     width: '100%',

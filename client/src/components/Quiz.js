@@ -142,24 +142,50 @@ const QuizComponent = ({ level, numQuestions, onQuizComplete, words }) => {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#6B5ECD" />
+        <Text style={styles.loadingText}>Loading quiz...</Text>
       </View>
     );
   }
 
   const current = questions[currentQuestionIndex];
+  const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerText}>Word: {current.word}</Text>
-      <Text style={styles.questionText}>Choose the correct definition:</Text>
-      {current.options.map((option, index) => (
-        <TouchableOpacity key={index} style={styles.optionButton} onPress={() => handleAnswer(option)}>
-          <Text style={styles.optionText}>{option}</Text>
-        </TouchableOpacity>
-      ))}
-      <Text style={styles.scoreText}>Score: {score}/{questions.length}</Text>
+      {/* Simple Header */}
+      <View style={styles.header}>
+        <Text style={styles.questionNumber}>
+          {currentQuestionIndex + 1}/{questions.length}
+        </Text>
+        <Text style={styles.score}>{score} points</Text>
+      </View>
+
+      {/* Progress Bar */}
+      <View style={styles.progressBar}>
+        <View style={[styles.progress, { width: `${progressPercentage}%` }]} />
+      </View>
+
+      {/* Word */}
+      <View style={styles.wordSection}>
+        <Text style={styles.word}>{current.word}</Text>
+        <Text style={styles.instruction}>Choose the correct definition</Text>
+      </View>
+
+      {/* Options */}
+      <View style={styles.optionsSection}>
+        {current.options.map((option, index) => (
+          <TouchableOpacity 
+            key={index} 
+            style={styles.option} 
+            onPress={() => handleAnswer(option)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.optionText}>{option}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
   );
 };
@@ -167,53 +193,79 @@ const QuizComponent = ({ level, numQuestions, onQuizComplete, words }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F6FF',
-    paddingHorizontal: 20,
-    paddingTop: 40,
-    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    padding: 24,
+    paddingTop: 60,
   },
-  centered: {
+  loadingContainer: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  headerText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#6B5ECD',
-    marginBottom: 10,
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666666',
   },
-  questionText: {
-    fontSize: 18,
-    color: '#555',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  optionButton: {
-    backgroundColor: '#6B5ECD',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderRadius: 15,
-    marginBottom: 12,
-    width: '100%',
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginBottom: 16,
+  },
+  questionNumber: {
+    fontSize: 16,
+    color: '#666666',
+    fontWeight: '500',
+  },
+  score: {
+    fontSize: 16,
+    color: '#6B5ECD',
+    fontWeight: '600',
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 2,
+    marginBottom: 40,
+  },
+  progress: {
+    height: '100%',
+    backgroundColor: '#6B5ECD',
+    borderRadius: 2,
+  },
+  wordSection: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  word: {
+    fontSize: 42,
+    fontWeight: '700',
+    color: '#6B5ECD',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  instruction: {
+    fontSize: 16,
+    color: '#666666',
+    textAlign: 'center',
+  },
+  optionsSection: {
+    flex: 1,
+  },
+  option: {
+    backgroundColor: '#F8F8F8',
+    padding: 20,
+    borderRadius: 8,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#6B5ECD',
   },
   optionText: {
-    color: '#FFF',
     fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  scoreText: {
-    fontSize: 18,
-    color: '#333',
-    fontWeight: '600',
-    marginTop: 20,
+    color: '#333333',
+    lineHeight: 22,
   },
 });
 

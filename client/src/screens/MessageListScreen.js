@@ -73,10 +73,9 @@ const MessageListScreen = ({ navigation }) => {
     const role = item.role || 'user';
     const chat = chatMeta[item._id];
     const hasUnread =
-    chat &&
-    !chat.seen &&                  // the last message hasn't been seen
-    chat.senderId === item._id;    // it was sent by *them*, not me
-
+      chat &&
+      !chat.seen &&                  // the last message hasn't been seen
+      chat.senderId === item._id;    // it was sent by *them*, not me
 
     return (
       <TouchableOpacity
@@ -88,33 +87,51 @@ const MessageListScreen = ({ navigation }) => {
           })
         }
       >
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>
+            {(item.FName || 'U').charAt(0).toUpperCase()}
+          </Text>
+        </View>
+        
         <View style={styles.info}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={styles.nameRow}>
             <Text style={styles.name}>{fullName}</Text>
-            {hasUnread &&  <View style={styles.newBadge}>
-          <Text style={styles.badgeText}>New</Text>
-        </View>}
           </View>
           <Text style={styles.email}>{email}</Text>
+          {/* <Text style={styles.role}>{role === 'teacher' ? 'Teacher' : 'Student'}</Text> */}
         </View>
-        <Icon name="envelope" size={20} color="#B052F7" />
+        
+        <View style={styles.rightSection}>
+          {hasUnread && (
+            <View style={styles.newBadge}>
+              <Text style={styles.newBadgeText}>New</Text>
+            </View>
+          )}
+          <Icon name="chevron-right" size={16} color="#9CA3AF" />
+        </View>
       </TouchableOpacity>
     );
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Text style={styles.header}>Message Your Followers</Text>
       {loading ? (
-        <ActivityIndicator size="large" color="#B052F7" />
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#6B5ECD" />
+          <Text style={styles.loadingText}>Loading contacts...</Text>
+        </View>
       ) : followers.length === 0 ? (
-        <Text style={styles.empty}>No followers found.</Text>
+        <View style={styles.centered}>
+          <Text style={styles.emptyTitle}>No contacts</Text>
+          <Text style={styles.emptyText}>You haven't connected with anyone yet</Text>
+        </View>
       ) : (
         <FlatList
           data={followers}
           keyExtractor={(item, index) => item._id?.toString() || index.toString()}
           renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </SafeAreaView>
@@ -124,67 +141,98 @@ const MessageListScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
-    paddingHorizontal: 16,
-    paddingTop: 20,
+    backgroundColor: '#FFFFFF',
   },
-  header: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 16,
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#6B7280',
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#6B7280',
     textAlign: 'center',
-    color: '#3D2C8D',
-    marginTop: 10,
+  },
+  listContent: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
   },
   card: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-    elevation: 2,
     alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+    backgroundColor: '#FFFFFF',
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#6B5ECD',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  avatarText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   info: {
     flex: 1,
-    paddingRight: 10,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
   },
   name: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#333',
+    fontWeight: '600',
+    color: '#111827',
+    flex: 1,
   },
   email: {
     fontSize: 14,
-    color: '#777',
-    marginTop: 2,
+    color: '#6B7280',
+    marginBottom: 2,
   },
-  empty: {
-    textAlign: 'center',
-    marginTop: 40,
-    fontSize: 16,
-    color: '#999',
+  role: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  unreadDot: {
-    width: 8,
-    height: 8,
-    backgroundColor: 'red',
-    borderRadius: 4,
-    marginLeft: 6,
+  rightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   newBadge: {
-  backgroundColor: '#FF3B30',
-  paddingVertical: 2,
-  paddingHorizontal: 8,
-  borderRadius: 10,
-  marginLeft: 10,
-},
-badgeText: {
-  color: 'white',
-  fontSize: 12,
-  fontWeight: 'bold',
-},
+    backgroundColor: '#9CA3AF',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    marginRight: 8,
+  },
+  newBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '600',
+  },
 });
 
 export default MessageListScreen;

@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
+  SafeAreaView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import serverApi from '../../api/serverApi';
@@ -136,266 +137,397 @@ const ActivityManagerScreen = () => {
   }
 };
 
-
-
-
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Create Activity</Text>
-        <TouchableOpacity style={styles.addButton} onPress={addTask}>
-          <Icon name="plus" size={20} color="#fff" />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.formGroup}>
-        <Text style={styles.inputLabel}>Title</Text>
-        <TextInput style={styles.input} value={title} onChangeText={setTitle} />
-      </View>
-
-      <View style={styles.formGroup}>
-        <Text style={styles.inputLabel}>Description</Text>
-        <TextInput style={[styles.input, styles.textArea]} multiline value={description} onChangeText={setDescription} />
-      </View>
-
-      <View style={styles.formGroup}>
-      <Text style={styles.inputLabel}>Task Type</Text>
-      <View style={styles.optionRow}>
-        {['word', 'sentence'].map((t) => (
-          <TouchableOpacity
-            key={t}
-            style={[styles.optionButton, type === t && styles.selectedOptionButton]}
-            onPress={() => setType(t)}
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Create Activity</Text>
+          <TouchableOpacity 
+            style={styles.addButton} 
+            onPress={addTask}
+            activeOpacity={0.8}
           >
-            <Text style={[styles.optionText, type === t && styles.selectedOptionText]}>
-              {t.charAt(0).toUpperCase() + t.slice(1)}
-            </Text>
+            <Icon name="plus" size={16} color="#FFFFFF" />
           </TouchableOpacity>
-        ))}
-      </View>
-    </View>
+        </View>
 
-    <View style={styles.formGroup}>
-      <Text style={styles.inputLabel}>Skill</Text>
-      <View style={styles.optionRow}>
-      {['reading', 'writing'].map((s) => {
-        const isDisabled = type === 'word' && s === 'writing';
-        const isSelected = skill === s;
+        <ScrollView 
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {/* Basic Information Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Basic Information</Text>
+            
+            <View style={styles.formGroup}>
+              <Text style={styles.inputLabel}>Activity Title</Text>
+              <TextInput 
+                style={styles.input} 
+                value={title} 
+                onChangeText={setTitle}
+                placeholder="Enter activity title"
+                placeholderTextColor="#999999"
+              />
+            </View>
 
-        return (
-          <TouchableOpacity
-            key={s}
-            style={[
-              styles.optionButton,
-              isSelected && styles.selectedOptionButton,
-              isDisabled && { backgroundColor: '#ddd', borderColor: '#ccc' },
-            ]}
-            onPress={() => {
-              if (!isDisabled) setSkill(s);
-            }}
-            disabled={isDisabled}
-          >
-            <Text
-              style={[
-                styles.optionText,
-                isSelected && styles.selectedOptionText,
-                isDisabled && { color: '#999' },
-              ]}
-            >
-              {s.charAt(0).toUpperCase() + s.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-
-      </View>
-    </View>
-
-    <View style={styles.formGroup}>
-      <Text style={styles.inputLabel}>Target Student Level</Text>
-      <View style={styles.optionRow}>
-        {['beginner', 'intermediate', 'advanced'].map((level) => (
-          <TouchableOpacity
-            key={level}
-            style={[styles.optionButton, targetLevel === level && styles.selectedOptionButton]}
-            onPress={() => setTargetLevel(level)}
-          >
-            <Text style={[styles.optionText, targetLevel === level && styles.selectedOptionText]}>
-              {level.charAt(0).toUpperCase() + level.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-  </View>
-
-
-
-
-    <View style={styles.formGroup}>
-      <Text style={styles.inputLabel}>Topic (for AI)</Text>
-      <TextInput
-        style={styles.input}
-        value={topic}
-        onChangeText={setTopic}
-        placeholder="e.g. animals, travel, technology"
-      />
-    
-
-    <TouchableOpacity
-      style={[styles.submitButton, loadingAI && { backgroundColor: '#999' }]}
-      onPress={generateTasksWithAI}
-      disabled={loadingAI}
-    >
-      <Text style={styles.submitButtonText}>
-        {loadingAI ? 'Generating...' : 'Generate Tasks with AI'}
-      </Text>
-    </TouchableOpacity>
-
-    </View>
-
-    <View style={styles.formGroup}>
-     <Text style={styles.inputLabel}>Tasks</Text>
-      {tasks.map((task, i) => (
-        <View key={i} style={styles.taskCard}>
-          <View style={styles.taskHeader}>
-            <Text style={styles.taskTitle}>Task #{i + 1}</Text>
-            <TouchableOpacity onPress={() => removeTask(i)} style={styles.removeButton}>
-              <Icon name="trash" size={18} color="#FF6B6B" />
-            </TouchableOpacity>
+            <View style={styles.formGroup}>
+              <Text style={styles.inputLabel}>Description</Text>
+              <TextInput 
+                style={[styles.input, styles.textArea]} 
+                multiline 
+                value={description} 
+                onChangeText={setDescription}
+                placeholder="Describe the activity purpose and goals"
+                placeholderTextColor="#999999"
+              />
+            </View>
           </View>
-          <TextInput
-            placeholder="Prompt"
-            style={styles.input}
-            value={task.prompt}
-            onChangeText={(text) => updateTask(i, 'prompt', text)}
-          />
-          <TextInput
-            placeholder="Expected Answer (optional)"
-            style={styles.input}
-            value={task.expectedAnswer}
-            onChangeText={(text) => updateTask(i, 'expectedAnswer', text)}
-          />
-        </View>       
-      ))}
-      </View>
 
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.submitButtonText}>Submit Activity</Text>
-      </TouchableOpacity>
-    </ScrollView>
+          {/* Configuration Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Configuration</Text>
+            
+            <View style={styles.formGroup}>
+              <Text style={styles.inputLabel}>Task Type</Text>
+              <View style={styles.optionRow}>
+                {['word', 'sentence'].map((t) => (
+                  <TouchableOpacity
+                    key={t}
+                    style={[styles.optionButton, type === t && styles.selectedOptionButton]}
+                    onPress={() => setType(t)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.optionText, type === t && styles.selectedOptionText]}>
+                      {t.charAt(0).toUpperCase() + t.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.inputLabel}>Skill Focus</Text>
+              <View style={styles.optionRow}>
+              {['reading', 'writing'].map((s) => {
+                const isDisabled = type === 'word' && s === 'writing';
+                const isSelected = skill === s;
+
+                return (
+                  <TouchableOpacity
+                    key={s}
+                    style={[
+                      styles.optionButton,
+                      isSelected && styles.selectedOptionButton,
+                      isDisabled && styles.disabledOptionButton,
+                    ]}
+                    onPress={() => {
+                      if (!isDisabled) setSkill(s);
+                    }}
+                    disabled={isDisabled}
+                    activeOpacity={isDisabled ? 1 : 0.8}
+                  >
+                    <Text
+                      style={[
+                        styles.optionText,
+                        isSelected && styles.selectedOptionText,
+                        isDisabled && styles.disabledOptionText,
+                      ]}
+                    >
+                      {s.charAt(0).toUpperCase() + s.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+              </View>
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.inputLabel}>Target Level</Text>
+              <View style={styles.optionRow}>
+                {['beginner', 'intermediate', 'advanced'].map((level) => (
+                  <TouchableOpacity
+                    key={level}
+                    style={[styles.optionButton, targetLevel === level && styles.selectedOptionButton]}
+                    onPress={() => setTargetLevel(level)}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.optionText, targetLevel === level && styles.selectedOptionText]}>
+                      {level.charAt(0).toUpperCase() + level.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </View>
+
+          {/* AI Generation Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>AI Task Generation</Text>
+            
+            <View style={styles.formGroup}>
+              <Text style={styles.inputLabel}>Topic</Text>
+              <TextInput
+                style={styles.input}
+                value={topic}
+                onChangeText={setTopic}
+                placeholder="e.g. animals, travel, technology"
+                placeholderTextColor="#999999"
+              />
+              
+              <TouchableOpacity
+                style={[styles.aiButton, loadingAI && styles.aiButtonDisabled]}
+                onPress={generateTasksWithAI}
+                disabled={loadingAI}
+                activeOpacity={0.8}
+              >
+                <Icon 
+                  name={loadingAI ? "spinner" : "magic"} 
+                  size={16} 
+                  color="#FFFFFF" 
+                  style={styles.buttonIcon}
+                />
+                <Text style={styles.aiButtonText}>
+                  {loadingAI ? 'Generating...' : 'Generate with AI'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Tasks Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Tasks ({tasks.length})</Text>
+            
+            {tasks.map((task, i) => (
+              <View key={i} style={styles.taskCard}>
+                <View style={styles.taskHeader}>
+                  <Text style={styles.taskTitle}>Task {i + 1}</Text>
+                  {tasks.length > 1 && (
+                    <TouchableOpacity 
+                      onPress={() => removeTask(i)} 
+                      style={styles.removeButton}
+                      activeOpacity={0.8}
+                    >
+                      <Icon name="trash" size={16} color="#F44336" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+                
+                <View style={styles.taskInputContainer}>
+                  <TextInput
+                    placeholder="Enter task prompt"
+                    placeholderTextColor="#999999"
+                    style={styles.taskInput}
+                    value={task.prompt}
+                    onChangeText={(text) => updateTask(i, 'prompt', text)}
+                    multiline
+                  />
+                  
+                  {type === 'word' && (
+                    <TextInput
+                      placeholder="Expected answer (optional)"
+                      placeholderTextColor="#999999"
+                      style={styles.taskInput}
+                      value={task.expectedAnswer}
+                      onChangeText={(text) => updateTask(i, 'expectedAnswer', text)}
+                      multiline
+                    />
+                  )}
+                </View>
+              </View>       
+            ))}
+          </View>
+
+          {/* Submit Button */}
+          <TouchableOpacity 
+            style={styles.submitButton} 
+            onPress={handleSubmit}
+            activeOpacity={0.8}
+          >
+            <Icon name="check" size={16} color="#FFFFFF" style={styles.buttonIcon} />
+            <Text style={styles.submitButtonText}>Create Activity</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#F8F6FF',
+  safeArea: {
     flex: 1,
-    padding: 20,
+    backgroundColor: '#FFFFFF',
+  },
+  container: {
+    flex: 1,
+    paddingTop: 50,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#333333',
   },
   addButton: {
-    backgroundColor: '#B052F7',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    backgroundColor: '#6B5ECD',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 40,
+  },
+  section: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333333',
+    marginBottom: 16,
+  },
   formGroup: {
-    marginBottom: 15,
+    marginBottom: 20,
   },
   inputLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '500',
+    color: '#666666',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: '#F8F8F8',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: '#333333',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  textArea: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+  },
+  optionRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  optionButton: {
+    flex: 1,
+    backgroundColor: '#F8F8F8',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  selectedOptionButton: {
+    backgroundColor: '#6B5ECD',
+    borderColor: '#6B5ECD',
+  },
+  disabledOptionButton: {
+    backgroundColor: '#E8E8E8',
+    borderColor: 'transparent',
+  },
+  optionText: {
+    color: '#666666',
+    fontWeight: '500',
+    fontSize: 14,
+  },
+  selectedOptionText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  disabledOptionText: {
+    color: '#CCCCCC',
+  },
+  aiButton: {
+    backgroundColor: '#6B5ECD',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 12,
+  },
+  aiButtonDisabled: {
+    backgroundColor: '#CCCCCC',
+  },
+  aiButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  buttonIcon: {
+    marginRight: 8,
+  },
+  taskCard: {
+    backgroundColor: '#F8F8F8',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#6B5ECD',
+  },
+  taskHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  taskTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333333',
+  },
+  removeButton: {
+    padding: 4,
+  },
+  taskInputContainer: {
+    gap: 12,
+  },
+  taskInput: {
+    backgroundColor: '#FFFFFF',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 16,
+    fontSize: 14,
+    color: '#333333',
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: 'top',
-  },
-  taskCard: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#f0f0f0',
+    borderColor: '#E8E8E8',
+    minHeight: 40,
   },
   submitButton: {
-    backgroundColor: '#B052F7',
-    paddingVertical: 14,
-    borderRadius: 10,
+    backgroundColor: '#6B5ECD',
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 8,
     marginTop: 20,
   },
   submitButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },
-  optionRow: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  marginTop: 8,
-},
-optionButton: {
-  flex: 1,
-  backgroundColor: '#f5f5f5',
-  paddingVertical: 10,
-  marginRight: 10,
-  borderRadius: 8,
-  alignItems: 'center',
-  borderWidth: 1,
-  borderColor: '#e0e0e0',
-},
-selectedOptionButton: {
-  backgroundColor: '#B052F7',
-  borderColor: '#B052F7',
-},
-optionText: {
-  color: '#333',
-  fontWeight: '600',
-  fontSize: 14,
-},
-selectedOptionText: {
-  color: '#fff',
-},
-taskHeader: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: 10,
-},
-taskTitle: {
-  fontSize: 16,
-  fontWeight: 'bold',
-  color: '#333',
-},
-removeButton: {
-  padding: 4,
-},
-
-
 });
 
 export default ActivityManagerScreen;
