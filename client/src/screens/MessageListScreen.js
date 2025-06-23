@@ -56,10 +56,23 @@ const MessageListScreen = ({ navigation }) => {
         fetchFollowers(),
         fetchChatMeta(),
       ]);
-      setFollowers(followersData);
+
+      // Sort followers based on chatList timestamp (most recent first)
+      const sortedFollowers = [...followersData].sort((a, b) => {
+        const chatA = chatList[a._id];
+        const chatB = chatList[b._id];
+
+        const timeA = chatA?.timestamp ? new Date(chatA.timestamp).getTime() : 0;
+        const timeB = chatB?.timestamp ? new Date(chatB.timestamp).getTime() : 0;
+
+        return timeB - timeA; // recent first
+      });
+
+      setFollowers(sortedFollowers);
       setChatMeta(chatList);
       setLoading(false);
     };
+
 
     loadData();
     interval = setInterval(loadData, 5000); // update every 5s

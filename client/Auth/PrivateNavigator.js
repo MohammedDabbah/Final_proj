@@ -42,7 +42,7 @@ const PrivateNavigator = () => {
       ? 'LevelSelection'
       : 'StudentHome'
   }
-  screenOptions={{ headerShown: true }}
+  screenOptions={{ headerShown: true , headerTitle:'', headerTintColor:'#6B5ECD' }}
 >
       <Stack.Screen name="TeacherHome" component={TeacherScreen} />
   <Stack.Screen name="StudentHome" component={IndexScreen} />

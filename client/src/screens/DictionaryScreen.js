@@ -18,6 +18,7 @@ const DictionaryScreen = ({ route, navigation }) => {
   const [focusedInput, setFocusedInput] = useState(false);
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  
 
   // Customize the navigation header
   React.useLayoutEffect(() => {
@@ -41,7 +42,7 @@ const DictionaryScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     if (initialWord) {
-      console.log(initialWord);
+      //console.log(initialWord);
       fetchWordData(initialWord);
     }
     
@@ -64,8 +65,8 @@ const DictionaryScreen = ({ route, navigation }) => {
       }
       
       // Enhanced prompt for realistic, real-world images perfect for children's learning
-const prompt = `A real, high-resolution photo of only the object: ${wordToGenerate}. No background distractions. The object must be fully visible, centered, and photographed in real life with a DSLR or mirrorless camera. Sharp focus, real texture, natural colors. Absolutely no illustrations, no digital art, no AI-generated painting — just a true photographic image of the object as it appears in the real world.`;
-      
+const prompt = `Photograph of a ${wordToGenerate}, defined as "${definition[0]}", isolated on a white background, taken with a DSLR camera. Natural lighting, no shadows, realistic color and texture, no text, no AI art, no illustration. Sharp focus. Suitable for a children’s educational dictionary.`;
+    
       const response = await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',
         headers: {
@@ -73,14 +74,15 @@ const prompt = `A real, high-resolution photo of only the object: ${wordToGenera
           'Authorization': `Bearer ${AI_API_KEY}`
         },
         body: JSON.stringify({
-          prompt: prompt,
+          prompt,
           n: 1,
           size: "1024x1024",
           model: "dall-e-3",
           style: "natural",
-          quality: "hd"
+          quality: "standard"
         })
       });
+
       
       const data = await response.json();
       

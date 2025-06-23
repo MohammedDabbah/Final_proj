@@ -48,7 +48,7 @@ const ImproveReadingScreen = () => {
         messages: [
           { 
             role: "system", 
-            content: `Generate a JSON array of 10 simple, educational words for ${user.userLevel}. Ensure the words are varied, age-appropriate, and can be easily pronounced.`
+            content: `Generate a JSON array of 10, educational words suitable for ${user.userLevel}. Ensure the words are varied, age-appropriate.`
           },
           { 
             role: "user", 
@@ -198,6 +198,7 @@ const ImproveReadingScreen = () => {
         name: "recording.m4a",
       });
       formData.append("model", "whisper-1");
+      formData.append("language", "en");  // Force English transcription ✅
   
       const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
         method: "POST",

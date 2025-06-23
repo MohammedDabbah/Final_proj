@@ -84,7 +84,7 @@ const WordPracticeGame = () => {
           messages: [
             { 
               role: "system", 
-              content: "You are a word provider. You must respond with exactly 10 simple English words as a JSON array. Example: [\"cat\", \"dog\", \"tree\", \"house\", \"book\", \"apple\", \"computer\", \"ocean\", \"mountain\", \"bicycle\"]" 
+              content: `You are a word provider. You must respond with exactly 10 English words for a ${user.userLevel}'s as a JSON array. Example: [\"cat\", \"dog\", \"tree\", \"house\", \"book\", \"apple\", \"computer\", \"ocean\", \"mountain\", \"bicycle\"]` 
             }, 
             { 
               role: "user", 

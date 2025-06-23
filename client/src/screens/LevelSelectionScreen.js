@@ -43,7 +43,6 @@ const LevelSelectionScreen = ({ navigation }) => {
                     temperature: 0.7,
                     max_tokens: 700
                 },
-                
             );
     
             const responseData = response.data.choices[0].message.content;
@@ -62,9 +61,6 @@ const LevelSelectionScreen = ({ navigation }) => {
         }
     };
     
-    
-    
-
     const handleSkipQuiz = async () => {
         try {
             // ✅ Ensure userLevel updates properly
@@ -77,21 +73,18 @@ const LevelSelectionScreen = ({ navigation }) => {
     
             // ✅ Use `setTimeout` to delay navigation slightly
             setTimeout(() => {
-            console.log("🔄 Navigating to Home...");
-            navigation.dispatch(
-                CommonActions.reset({
-                index: 0,
-                routes: [{ name: user?.role === 'teacher' ? 'TeacherHome' : 'StudentHome' }],
-                })
-            );
+                console.log("🔄 Navigating to Home...");
+                navigation.dispatch(
+                    CommonActions.reset({
+                        index: 0,
+                        routes: [{ name: user?.role === 'teacher' ? 'TeacherHome' : 'StudentHome' }],
+                    })
+                );
             }, 500);
-
-            
         } catch (err) {
             console.error("❌ Error updating user level:", err);
         }
     };
-    
 
     return (
         <View style={styles.container}>
@@ -122,38 +115,47 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F8F6FF',
         paddingHorizontal: 20,
-        paddingTop: 80,
+        paddingTop: 10,
         alignItems: 'center',
+        justifyContent: 'center',
     },
     header: {
-        fontSize: 28,
-        fontWeight: 'bold',
+        fontSize: 30,
+        fontWeight: '700',
         color: '#6B5ECD',
-        marginBottom: 10,
+        marginBottom: 15,
+        textAlign: 'center',
     },
     subHeader: {
         fontSize: 18,
         color: '#555',
         textAlign: 'center',
-        marginBottom: 30,
-        paddingHorizontal: 15,
+        marginBottom: 40,
+        paddingHorizontal: 30,
+        lineHeight: 24,
     },
     button: {
         backgroundColor: '#6B5ECD',
         paddingVertical: 15,
-        paddingHorizontal: 30,
-        borderRadius: 15,
-        marginBottom: 12,
-        width: '100%',
+        paddingHorizontal: 40,
+        borderRadius: 25,
+        marginBottom: 15,
+        width: '90%',
         alignItems: 'center',
+        shadowColor: '#6B5ECD',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        elevation: 6,
     },
     skipButton: {
         backgroundColor: '#FF8C69',
     },
     buttonText: {
-        color: '#FFF',
-        fontSize: 16,
-        fontWeight: 'bold',
+        color: '#FFFFFF',
+        fontSize: 18,
+        fontWeight: '700',
+        textAlign: 'center',
     },
 });
 

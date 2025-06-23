@@ -134,6 +134,7 @@ const sendAudioToAI = async (uri) => {
       name: "recording.m4a",
     });
     formData.append("model", "whisper-1");
+    formData.append("language", "en");  // Force English transcription ✅
 
     const res = await aiApi.post("/audio/transcriptions", formData, {
       headers: { "Content-Type": "multipart/form-data" },

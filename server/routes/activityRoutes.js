@@ -16,9 +16,9 @@ router.post('/', async (req, res) => {
       type,
       skill,
       tasks,
+      createdBy,
       targetLevel,
       dueDate,
-      createdBy
     });
     res.status(201).json(activity);
   } catch (err) {
@@ -46,7 +46,7 @@ router.get('/student', async (req, res) => {
     const student = await User.findById(studentId);
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
-    // Fetch all activities for this student level
+    // Fetch all activities for this student's level
     const activities = await Activity.find({
       targetLevel: student.userLevel,
     });
@@ -59,26 +59,28 @@ router.get('/student', async (req, res) => {
       answersByActivity[ans.activityId.toString()] = ans;
     });
 
-    // Enrich activities with submission info
-    const enriched = activities.map(act => {
-      const answer = answersByActivity[act._id.toString()];
-      const enrichedActivity = {
-        ...act.toObject(),
-        alreadySubmitted: !!answer,
-      };
+    // Filter and enrich only if student follows the teacher who posted the activity
+    const enriched = activities
+      .filter(act => student.Following.includes(act.createdBy.toString()))
+      .map(act => {
+        const answer = answersByActivity[act._id.toString()];
+        const enrichedActivity = {
+          ...act.toObject(),
+          alreadySubmitted: !!answer,
+        };
 
-      if (answer) {
-        enrichedActivity.responses = {};
-        enrichedActivity.feedback = {};
+        if (answer) {
+          enrichedActivity.responses = {};
+          enrichedActivity.feedback = {};
 
-        answer.responses.forEach(({ taskIndex, response, feedback }) => {
-          enrichedActivity.responses[taskIndex] = response;
-          enrichedActivity.feedback[taskIndex] = feedback || null;
-        });
-      }
+          answer.responses.forEach(({ taskIndex, response, feedback }) => {
+            enrichedActivity.responses[taskIndex] = response;
+            enrichedActivity.feedback[taskIndex] = feedback || null;
+          });
+        }
 
-      return enrichedActivity;
-    });
+        return enrichedActivity;
+      });
 
     res.json(enriched);
   } catch (err) {
