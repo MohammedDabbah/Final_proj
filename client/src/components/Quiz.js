@@ -15,6 +15,7 @@ const QuizComponent = ({ level, numQuestions, onQuizComplete, words }) => {
 
   useEffect(() => {
     generateQuiz();
+    console.log(numQuestions);
   }, [level, numQuestions]);
 
   const getWordsByLevel = () => {
@@ -54,33 +55,53 @@ const QuizComponent = ({ level, numQuestions, onQuizComplete, words }) => {
     return fetchedDefinitions;
   };
 
-  const generateQuiz = async () => {
-    setLoading(true);
+const generateQuiz = async () => {
+  setLoading(true);
 
-    let selectedWords;
-    if (words && words.length > 0) {
-      selectedWords = words.map(w => (typeof w === 'string' ? w : w.word));
-    } else {
-      const wordsList = getWordsByLevel();
-      selectedWords = getRandomWords(wordsList, numQuestions);
-    }
+  let selectedWords;
+  if (words && words.length > 0) {
+    selectedWords = words.map(w => (typeof w === 'string' ? w : w.word));
+  } else {
+    const wordsList = words && words.length > 0
+  ? words.map(w => typeof w === 'string' ? { word: w } : w)
+  : getWordsByLevel();
 
-    const definitions = await fetchDefinitions(selectedWords);
+    selectedWords = level === 'mistakes'
+  ? wordsList.map(w => w.word)  // use all provided words
+  : getRandomWords(wordsList, numQuestions);
 
-    const quizQuestions = selectedWords.map(word => {
-      const correctDefinition = definitions[word] || 'No definition';
-      const wrongOptions = Object.values(definitions)
-        .filter(def => def !== correctDefinition)
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 2);
+  }
 
-      const options = [...wrongOptions, correctDefinition].sort(() => 0.5 - Math.random());
-      return { word, correctDefinition, options };
-    });
+  const definitions = await fetchDefinitions(selectedWords);
 
-    setQuestions(quizQuestions);
-    setLoading(false);
-  };
+  // Filter only valid definitions
+  const validWords = selectedWords.filter(
+    word =>
+      definitions[word] !== 'Error fetching definition' &&
+      definitions[word] !== 'No definition found'
+  ).slice(0, level === 'mistakes' ? selectedWords.length : numQuestions);
+
+  const quizQuestions = validWords.map(word => {
+    const correctDefinition = definitions[word];
+
+    const uniqueWrongOptions = [...new Set(
+      Object.values(definitions).filter(
+        def =>
+          def !== correctDefinition &&
+          def !== 'Error fetching definition' &&
+          def !== 'No definition found'
+      )
+    )].sort(() => 0.5 - Math.random()).slice(0, 2);
+
+    const options = [...uniqueWrongOptions, correctDefinition].sort(() => 0.5 - Math.random());
+
+    return { word, correctDefinition, options };
+  });
+
+  setQuestions(quizQuestions);
+  setLoading(false);
+};
+
 
   const updateUserMistakes = async (updatedMistakes) => {
     try {
@@ -93,29 +114,37 @@ const QuizComponent = ({ level, numQuestions, onQuizComplete, words }) => {
     }
   };
 
-  const handleAnswer = async (selectedAnswer) => {
-    const currentQuestion = questions[currentQuestionIndex];
-    const isCorrect = selectedAnswer === currentQuestion.correctDefinition;
+const handleAnswer = (selectedAnswer) => {
+  const currentQuestion = questions[currentQuestionIndex];
+  const isCorrect = selectedAnswer === currentQuestion.correctDefinition;
 
-    if (!isCorrect) {
-      setUnknownWords(prev => [...prev, {
-        word: currentQuestion.word,
-        definition: currentQuestion.correctDefinition
-      }]);
-    } else if (words) {
-      const updatedMistakes = unknownWords.filter(w => w.word !== currentQuestion.word);
-      setUnknownWords(updatedMistakes);
-      await updateUserMistakes(updatedMistakes);
-    }
+  // Update local copy instead of relying on async setState
+  let updatedUnknownWords = [...unknownWords];
 
-    setScore(prev => prev + (isCorrect ? 1 : 0));
+  if (!isCorrect) {
+    updatedUnknownWords.push({
+      word: currentQuestion.word,
+      definition: currentQuestion.correctDefinition
+    });
+  } else if (words) {
+    updatedUnknownWords = updatedUnknownWords.filter(w => w.word !== currentQuestion.word);
+  }
 
-    Alert.alert(
-      isCorrect ? 'Correct!' : 'Wrong!',
-      isCorrect ? 'Well done! 🎉' : `The correct answer was: "${currentQuestion.correctDefinition}"`,
-      [{ text: 'Next', onPress: nextQuestion }]
-    );
-  };
+  Alert.alert(
+    isCorrect ? 'Correct!' : 'Wrong!',
+    isCorrect ? 'Well done! 🎉' : `The correct answer was: "${currentQuestion.correctDefinition}"`,
+    [{
+      text: 'Next',
+      onPress: () => nextQuestion(isCorrect, updatedUnknownWords)
+    }]
+  );
+
+  // Set new state for consistency (for next round)
+  setUnknownWords(updatedUnknownWords);
+};
+
+
+
 
   const saveUnknownWords = async () => {
     try {
@@ -127,18 +156,33 @@ const QuizComponent = ({ level, numQuestions, onQuizComplete, words }) => {
     }
   };
 
-  const nextQuestion = async () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
-    } else {
-      if (unknownWords.length > 0) {
-        await saveUnknownWords();
-      }
-      Alert.alert('Quiz Completed!', `Your score: ${score}/${questions.length}`, [
-        { text: 'OK', onPress: () => onQuizComplete(score) }
-      ]);
+const nextQuestion = async (isCorrect, updatedUnknownWords) => {
+  if (isCorrect) {
+    setScore(prev => prev + 1);
+  }
+
+  if (words) {
+    await updateUserMistakes(updatedUnknownWords);
+  }
+
+  if (currentQuestionIndex < questions.length - 1) {
+    setCurrentQuestionIndex(prev => prev + 1);
+  } else {
+    if (updatedUnknownWords.length > 0) {
+      await serverApi.post('/unknown-words', {
+        unknownWords: updatedUnknownWords
+      }, { withCredentials: true });
     }
-  };
+
+    const finalScore = isCorrect ? score + 1 : score;
+    Alert.alert('Quiz Completed!', `Your score: ${finalScore}/${questions.length}`, [
+      { text: 'OK', onPress: () => onQuizComplete(finalScore) }
+    ]);
+  }
+};
+
+
+
 
   if (loading) {
     return (

@@ -7,14 +7,14 @@ import { AuthContext } from '../../Auth/AuthContext';
 
 const QuizScreen = ({ route, navigation }) => {
     //const { level, words } = route.params || {};
-    const { words } = route.params || {};
+    const { words, numQuestions } = route.params || {};
     const {user} = useContext(AuthContext);
    // console.log(words);
 
     return (
         <QuizComponent 
             level={user.userLevel} 
-            numQuestions={10} 
+            numQuestions={numQuestions ? numQuestions : 10} 
             words={words} 
             onQuizComplete={(score) => navigation.dispatch(
                             CommonActions.reset({

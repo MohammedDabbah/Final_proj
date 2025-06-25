@@ -33,6 +33,7 @@ const ReviewMistakesScreen = ({ navigation }) => {
         navigation.navigate('Quiz', {
             level: 'mistakes',
             words: wrongAnswers.map(item => item.word),
+            numQuestions:wrongAnswers.length, 
         });
     };
 
