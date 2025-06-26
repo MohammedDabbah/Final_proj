@@ -42,7 +42,7 @@ const DictionaryScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     if (initialWord) {
-      //console.log(initialWord);
+      console.log(initialWord);
       fetchWordData(initialWord);
     }
     
@@ -54,7 +54,7 @@ const DictionaryScreen = ({ route, navigation }) => {
     }).start();
   }, [initialWord]);
 
-  const generateWordImage = async (wordToGenerate) => {
+  const generateWordImage = async (wordToGenerate, definitionArray) => {
     try {
       setImageLoading(true);
       
@@ -65,7 +65,8 @@ const DictionaryScreen = ({ route, navigation }) => {
       }
       
       // Enhanced prompt for realistic, real-world images perfect for children's learning
-const prompt = `Photograph of a ${wordToGenerate}, defined as "${definition[0]}", isolated on a white background, taken with a DSLR camera. Natural lighting, no shadows, realistic color and texture, no text, no AI art, no illustration. Sharp focus. Suitable for a children’s educational dictionary.`;
+      console.log('ai: ',wordToGenerate);
+const prompt = `Photograph of a ${wordToGenerate}, defined as ${definitionArray?.[0]}", isolated on a white background, taken with a DSLR camera. Natural lighting, no shadows, realistic color and texture, no text, no AI art, no illustration. Sharp focus. Suitable for a children’s educational dictionary.`;
     
       const response = await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',
@@ -129,7 +130,8 @@ const prompt = `Photograph of a ${wordToGenerate}, defined as "${definition[0]}"
         }
 
         // Generate AI image for the word
-        generateWordImage(wordToFetch);
+        console.log(wordToFetch);
+        generateWordImage(wordToFetch, data[0].shortdef);
       }
     } catch (err) {
       console.error("Error fetching word data:", err);
